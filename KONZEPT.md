@@ -69,7 +69,7 @@ Sonderfälle:
 - Prior μᵢ ~ N(0, τ²), τ ≈ 1.5. Der Prior regularisiert und hält Bilder ohne Niederlagen endlich.
 - Unentschieden zählt als ½ Sieg für beide.
 - **Nach jedem Vergleich wird aus dem kompletten Log neu berechnet** (Newton/MM-Iteration). Bei N ≤ ~1000 sind das Millisekunden. Vorteil: Das Ergebnis hängt nicht von der Reihenfolge der Vergleiche ab, und Undo heißt einfach „letzten Log-Eintrag entfernen“.
-- Unsicherheit σᵢ per Laplace-Näherung (Diagonale der inversen Hesse-Matrix, oder vereinfacht 1/√(Hᵢᵢ)).
+- Unsicherheit σᵢ per Laplace-Näherung: Diagonale der inversen Hesse-Matrix, relativ zum Mittelwert aller Stärken. Die gemeinsame Verschiebung aller Stärken (Varianz τ²/N) wird abgezogen, weil sie die Rangfolge nicht beeinflusst. Ab 300 aktiven Bildern wird vereinfacht 1/√(Hᵢᵢ) verwendet, weil die exakte Rechnung O(N³) kostet.
 
 > Warum nicht Elo/Glicko? Diese aktualisieren inkrementell und sind reihenfolgeabhängig. Mit vollständigem Neu-Fit ist das Modell fairer und Undo trivial. TrueSkill ist markenrechtlich geschützt und unnötig komplex.
 
@@ -79,23 +79,27 @@ Gesucht ist nicht die komplette Rangfolge, sondern nur **wer zu den Top n gehör
 1. Nach μ sortieren. Grenze b = (μ₍ₙ₎ + μ₍ₙ₊₁₎) / 2.
 2. Mehrdeutigkeit jedes Bildes: aᵢ = Φ(−|μᵢ − b| / σᵢ), also die Wahrscheinlichkeit, dass es auf der falschen Seite der Grenze steht.
 3. **Fairness-Regel zuerst:** Hat ein Bild weniger als `minDuels` Vergleiche (Standard 2), hat es Vorrang.
-4. Sonst wird das Bild A mit der höchsten Mehrdeutigkeit gewählt.
+4. Sonst wird das Bild A mit dem höchsten Wert aᵢ·σᵢ gewählt. Die Gewichtung mit σᵢ sorgt dafür, dass Bilder an der Grenze mit vielen Duellen nicht endlos drankommen und früh unglücklich verlorene Bilder eine neue Chance bekommen.
 5. Partner B: ein Bild mit möglichst ähnlichem μ, bevorzugt auf der anderen Seite der Grenze, mit hoher Mehrdeutigkeit.
 6. Nebenbedingungen:
    - kein Bild in zwei aufeinanderfolgenden Duellen (wenn N ≥ 4),
-   - ein Paar höchstens `maxRepeatsPerPair` mal (Standard 1, außer bei Unentschieden),
+   - ein Paar höchstens `maxRepeatsPerPair` mal entschieden (Standard 2, Unentschieden zählen nicht),
+   - gelockert wird erst, wenn kein Bild A mehr einen erlaubten Partner hat,
    - **links/rechts zufällig** (Seed protokolliert, damit reproduzierbar).
 7. Startrunde: Alle Bilder werden zufällig gepaart (wie Runde 1 im Schweizer System). So hat jedes Bild ab dem ersten Durchgang Daten.
 
 ### 3.3 Abbruchkriterium
-Fertig, wenn alle Bilder `minDuels` erfüllt haben **und** max(aᵢ) < `confidenceThreshold` (Standard 0.05). Zusätzlich gibt es ein weiches Budget (`maxComparisons`, Standard 4·N), danach kommt der Hinweis „gut genug – beenden?“.
+Fertig, wenn alle Bilder `minDuels` erfüllt haben **und** der erwartete Anteil falscher Bilder in der Top n, Σᵢ∈Top aᵢ / n, kleiner als `confidenceThreshold` (Standard 0.05) ist. Zusätzlich gibt es ein weiches Budget (`maxComparisons`, Standard 2.5·N), danach kommt der Hinweis „gut genug – beenden?“.
+
+Die Schätzung ist vorsichtig: Bei 10 % Fehlerrate schätzt das Modell im Mittel 0.83, tatsächlich getroffen werden 0.87. Bei verrauschten Entscheidungen endet eine Sitzung deshalb meist über das Budget. „max(aᵢ) < 0.05“ ist als Kriterium ungeeignet, weil zwei fast gleich gute Bilder an der Grenze dauerhaft mehrdeutig bleiben.
 
 ### 3.4 Verifikation per Simulation (Pflicht-Test)
 Ein Test-Harness simuliert einen Nutzer:
 - Jedes Bild bekommt eine verborgene „wahre Qualität“.
-- Die simulierte Entscheidung ist verrauscht (logistisch, mit einstellbarer Fehlerrate und optionalem Links-Bias).
-- Gemessen werden die Trefferquote der Top n und die Anzahl Vergleiche, für N ∈ {20, 50, 100, 300} und n ∈ {1, 3, 5, 10}.
-- Akzeptanzkriterium als Startwert: Bei N=100, n=5 und 10 % Fehlerrate liegt die Trefferquote im Mittel ≥ 0.9 mit < 250 Vergleichen.
+- Die wahren Qualitäten sind N(0, 1)-verteilt. Die simulierte Entscheidung ist logistisch verrauscht: P(links) = σ((qₗ − qᵣ)/s + Links-Bias). Die Skala s wird so gewählt, dass die Fehlerrate über zufällige Paare dem eingestellten Wert entspricht. Fast gleich gute Bilder werden also oft verwechselt, klar verschiedene kaum. Als Zusatzmessung gibt es ein Flip-Modell mit festem Fehleranteil unabhängig vom Abstand.
+- Gemessen werden die Trefferquote der Top n, der Regret (mittlerer Qualitätsverlust gegenüber der wahren Top n, in Standardabweichungen) und die Anzahl Vergleiche, für N ∈ {20, 50, 100, 300} und n ∈ {1, 3, 5, 10}.
+- Akzeptanzkriterium: Bei N=100, n=5 und 10 % Fehlerrate (logistisch) liegt die Trefferquote im Mittel ≥ 0.85 und der Regret ≤ 0.03 bei höchstens 250 Vergleichen. Das ursprüngliche Ziel 0.9 ist mit 250 Vergleichen nicht erreichbar, die Fehlgriffe sind fast gleich gute Bilder.
+- Ergebnisse stehen in `docs/simulation.md`.
 - Der Harness ist gleichzeitig das Werkzeug zum Tunen von τ, `minDuels` und Schwellen.
 
 ## 4. Sitzung & Persistenz

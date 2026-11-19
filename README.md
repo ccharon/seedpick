@@ -9,7 +9,7 @@ KDE image viewer for picking the n best images from a folder by pairwise compari
 Two images are shown side by side and the arrow keys choose the better one.
 A Bradley-Terry model selects the next pair. The result is moved into `_keep`, `_rest` and `_reject`.
 
-The design is described in [KONZEPT.md](KONZEPT.md) (German).
+The design is described in [KONZEPT.md](KONZEPT.md) (German). Simulation results are in [docs/simulation.md](docs/simulation.md).
 
 Status: early development, nothing is usable yet.
 

@@ -15,3 +15,4 @@ The project uses [Semantic Versioning](https://semver.org/).
 
 - Project skeleton: CMake/ECM, presets, core library, empty Kirigami window, REUSE metadata.
 - Core: image scanner, session events, session state with undo, session file storage.
+- Core: Bradley-Terry model, pair scheduler and simulation harness.
