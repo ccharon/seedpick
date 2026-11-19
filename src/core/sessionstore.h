@@ -35,6 +35,10 @@ public:
     LoadResult load() const;
     // Atomic replace. The previous file stays intact if writing fails.
     bool save(const Session &session, const QDateTime &now, QString *error = nullptr) const;
+    // Renames the session file after an apply to ".seedpick-session.done.json", or to
+    // ".seedpick-session.done-1.json" and so on when the name is taken. Returns the new path,
+    // or an empty string on failure.
+    QString archive(QString *error = nullptr) const;
 
     static QByteArray serialize(const Session &session, const QDateTime &updatedAt);
     static LoadResult deserialize(const QByteArray &data);

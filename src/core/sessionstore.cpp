@@ -3,8 +3,11 @@
 
 #include "sessionstore.h"
 
+#include "filemover.h"
+
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -269,5 +272,22 @@ bool SessionStore::save(const Session &session, const QDateTime &now, QString *e
         return false;
     }
     return true;
+}
+
+QString SessionStore::archive(QString *error) const
+{
+    const QDir dir = QFileInfo(m_path).dir();
+    LocalFileMover mover;
+    for (int suffix = 0;; ++suffix) {
+        const QString name = suffix == 0 ? u".seedpick-session.done.json"_s : u".seedpick-session.done-%1.json"_s.arg(suffix);
+        const QString target = dir.filePath(name);
+        if (QFileInfo::exists(target)) {
+            continue;
+        }
+        if (!mover.move(m_path, target, error)) {
+            return {};
+        }
+        return target;
+    }
 }
 }
