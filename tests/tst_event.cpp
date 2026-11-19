@@ -40,6 +40,8 @@ private Q_SLOTS:
         QTest::newRow("override rest") << Event{OverrideEvent{u"a.png"_s, Role::Rest}, timestamp};
         QTest::newRow("override reject") << Event{OverrideEvent{u"a.png"_s, Role::Reject}, timestamp};
         QTest::newRow("finish") << Event{FinishEvent{}, timestamp};
+        QTest::newRow("apply") << Event{ApplyEvent{{u"a.png"_s, u"b.png"_s}}, timestamp};
+        QTest::newRow("apply without keep") << Event{ApplyEvent{}, timestamp};
         QTest::newRow("without timestamp") << Event{RejectEvent{u"a.png"_s}, {}};
     }
 
@@ -91,6 +93,9 @@ private Q_SLOTS:
         QTest::newRow("duel without right") << QByteArray(R"({"t":"duel","left":"a.png","result":"left"})");
         QTest::newRow("duel bad result") << QByteArray(R"({"t":"duel","left":"a.png","right":"b.png","result":"up"})");
         QTest::newRow("override without target") << QByteArray(R"({"t":"override","file":"a.png"})");
+        QTest::newRow("apply without keep") << QByteArray(R"({"t":"apply"})");
+        QTest::newRow("apply keep not array") << QByteArray(R"({"t":"apply","keep":"a.png"})");
+        QTest::newRow("apply empty entry") << QByteArray(R"({"t":"apply","keep":["a.png",""]})");
         QTest::newRow("timestamp not string") << QByteArray(R"({"t":"finish","at":5})");
         QTest::newRow("timestamp garbage") << QByteArray(R"({"t":"finish","at":"yesterday"})");
     }

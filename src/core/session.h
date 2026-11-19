@@ -74,7 +74,7 @@ public:
     // Appends the event if validate() accepts it.
     bool append(const Event &event, QString *error = nullptr);
     // Removes the last effective event and any ineffective events after it.
-    // Returns false when no effective event exists.
+    // Returns false when no effective event exists or the last one is an ApplyEvent, files moved by Apply stay moved.
     bool undo();
 
     // Replaces the image list with a fresh scan and recomputes the state.
@@ -89,6 +89,9 @@ public:
     bool isActive(qsizetype index) const;
     std::optional<Role> overrideTarget(qsizetype index) const;
     bool isFinished() const;
+    // An ApplyEvent fixed the keep set. Overrides after it still apply.
+    bool hasAppliedResult() const;
+    bool isAppliedKeep(qsizetype index) const;
 
     qsizetype activeCount() const;
     qsizetype unscreenedCount() const;
@@ -104,6 +107,7 @@ private:
         ScreeningState screening = ScreeningState::Unscreened;
         bool rejectedLater = false;
         std::optional<Role> override;
+        bool appliedKeep = false;
     };
 
     void rebuild();
@@ -120,5 +124,6 @@ private:
     QList<Duel> m_allDuels;
     QList<bool> m_effective;
     bool m_finished = false;
+    bool m_applied = false;
 };
 }

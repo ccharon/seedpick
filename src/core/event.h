@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QJsonObject>
 #include <QString>
+#include <QStringList>
 
 #include <optional>
 #include <variant>
@@ -61,7 +62,14 @@ struct FinishEvent {
     bool operator==(const FinishEvent &) const = default;
 };
 
-using EventData = std::variant<ScreenEvent, DuelEvent, RejectEvent, OverrideEvent, FinishEvent>;
+// Written when Apply starts. Holds the confirmed keep set, so a cancelled apply resumes with the same result
+// even though the ranking changes once moved images drop out.
+struct ApplyEvent {
+    QStringList keep;
+    bool operator==(const ApplyEvent &) const = default;
+};
+
+using EventData = std::variant<ScreenEvent, DuelEvent, RejectEvent, OverrideEvent, FinishEvent, ApplyEvent>;
 
 struct Event {
     EventData data;

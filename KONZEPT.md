@@ -119,7 +119,8 @@ Datei `.seedpick-session.json` im Arbeitsverzeichnis, versioniertes Schema:
     { "t": "duel", "at": "…", "left": "…", "right": "…", "result": "tie" },
     { "t": "reject", "at": "…", "file": "…" },
     { "t": "finish", "at": "…" },
-    { "t": "override", "at": "…", "file": "…", "target": "keep" }
+    { "t": "override", "at": "…", "file": "…", "target": "keep" },
+    { "t": "apply", "at": "…", "keep": ["img_0007.png", "…"] }
   ]
 }
 ```
@@ -127,6 +128,7 @@ Datei `.seedpick-session.json` im Arbeitsverzeichnis, versioniertes Schema:
 - **Das Event-Log ist die einzige Wahrheit.** Der Zustand (Phase, Ratings, Zuordnung) wird immer daraus abgeleitet. Undo entfernt das letzte wirksame Event. Events zu Dateien, die nicht mehr vorhanden sind, bleiben im Log, wirken aber nicht.
 - `at` ist der Zeitpunkt des Events (ISO 8601, UTC, Millisekunden). Das Feld ist optional und beeinflusst den abgeleiteten Zustand nicht.
 - `finish` beendet Phase 2 vorzeitig („jetzt beenden“). Undo nimmt es zurück.
+- `apply` wird geschrieben, bevor „Anwenden“ die erste Datei verschiebt, und hält die bestätigte Auswahl fest. Ab dann gilt diese Auswahl statt der Rangfolge. Undo geht nicht hinter `apply` zurück, weil die Dateien dann schon verschoben sein können. Overrides danach wirken weiter.
 - `skipScreening` gehört zur Sitzung, weil es bestimmt, ob ungesichtete Bilder an Duellen teilnehmen.
 - Unbekannte Felder werden beim Lesen ignoriert. Unbekannte oder fehlerhafte Events lassen das Laden scheitern, damit beim nächsten Speichern nichts verloren geht.
 - Gespeichert wird nach jedem Event, atomar (`QSaveFile`).
@@ -161,9 +163,9 @@ Option `rejectToTrash`: Ausschuss in den Papierkorb (freedesktop Trash) statt in
   {"t":"finish","at":"…"}            (bei Abbruch mit "cancelled":true)
   ```
   Lässt sich das Log nicht öffnen, wird nichts verschoben und die Sitzung bleibt bestehen. Ein `--undo-apply` gibt es nicht: Verschoben wird nur in Unterordner (oder in den Papierkorb), zurück geht es per Dateimanager.
-- Anwenden lässt sich abbrechen. Es stoppt nach dem aktuellen Bild samt Begleitdateien, das Log endet mit `"cancelled":true`, und die Sitzungsdatei bleibt. Beim Fortsetzen fehlen die verschobenen Bilder, die Rangfolge der übrigen wird neu berechnet.
+- Anwenden lässt sich abbrechen. Es stoppt nach dem aktuellen Bild samt Begleitdateien, das Log endet mit `"cancelled":true`, und die Sitzungsdatei bleibt. Beim Fortsetzen fehlen die verschobenen Bilder. Ohne das `apply`-Event würde die Rangfolge der übrigen neu berechnet. Weil viele Duelle gegen schon verschobene Bilder liefen, könnte dann eine andere Auswahl herauskommen (beim Test kippten alle drei Plätze). Mit `apply` bleibt die bestätigte Auswahl erhalten.
 - Fehler bei einzelnen Dateien brechen nicht alles ab. Am Ende kommt ein Bericht. Scheitert ein Bild, bleiben seine Begleitdateien bei ihm.
-- Die Rolle eines Bildes: ein Override gilt immer, sonst Ausschuss bei Ablehnung, Auswahl für die ersten n der Rangfolge, sonst Rest.
+- Die Rolle eines Bildes: ein Override gilt immer, sonst Ausschuss bei Ablehnung, Auswahl für die ersten n der Rangfolge (nach `apply` für die dort festgehaltenen Bilder), sonst Rest.
 
 ### Abstraktion
 Interface `FileMover` im Core, ohne GUI- oder KIO-Abhängigkeit:

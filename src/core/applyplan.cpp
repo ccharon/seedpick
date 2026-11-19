@@ -67,8 +67,16 @@ QList<Role> assignRoles(const Session &session, const QList<RankedImage> &rankin
             roles[i] = Role::Reject;
         }
     }
-    for (qsizetype rank = 0; rank < ranking.size() && rank < session.config().topN; ++rank) {
-        roles[ranking.at(rank).image] = Role::Keep;
+    if (session.hasAppliedResult()) {
+        for (qsizetype i = 0; i < count; ++i) {
+            if (session.isAppliedKeep(i)) {
+                roles[i] = Role::Keep;
+            }
+        }
+    } else {
+        for (qsizetype rank = 0; rank < ranking.size() && rank < session.config().topN; ++rank) {
+            roles[ranking.at(rank).image] = Role::Keep;
+        }
     }
     for (qsizetype i = 0; i < count; ++i) {
         if (const std::optional<Role> role = session.overrideTarget(i)) {

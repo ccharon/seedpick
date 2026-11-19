@@ -3,6 +3,7 @@
 
 #include "event.h"
 
+#include <QJsonArray>
 #include <QTimeZone>
 
 #include <array>
@@ -60,6 +61,25 @@ public:
             return {};
         }
         return value.toString();
+    }
+
+    // An array of non-empty strings, may be empty itself.
+    QStringList stringList(QLatin1StringView key)
+    {
+        const QJsonValue value = m_json.value(key);
+        if (!value.isArray()) {
+            fail(u"missing array field \"%1\""_s.arg(key));
+            return {};
+        }
+        QStringList result;
+        for (const QJsonValue &entry : value.toArray()) {
+            if (!entry.isString() || entry.toString().isEmpty()) {
+                fail(u"invalid entry in array field \"%1\""_s.arg(key));
+                return {};
+            }
+            result.append(entry.toString());
+        }
+        return result;
     }
 
     template<typename Enum, std::size_t N>
@@ -124,6 +144,9 @@ QJsonObject eventToJson(const Event &event)
                 json.insert("target"_L1, toName(roleNames, data.target));
             } else if constexpr (std::is_same_v<T, FinishEvent>) {
                 json.insert("t"_L1, "finish"_L1);
+            } else if constexpr (std::is_same_v<T, ApplyEvent>) {
+                json.insert("t"_L1, "apply"_L1);
+                json.insert("keep"_L1, QJsonArray::fromStringList(data.keep));
             }
         },
         event.data);
@@ -161,6 +184,8 @@ std::optional<Event> eventFromJson(const QJsonObject &json, QString *error)
         event.data = data;
     } else if (type == "finish"_L1) {
         event.data = FinishEvent{};
+    } else if (type == "apply"_L1) {
+        event.data = ApplyEvent{reader.stringList("keep"_L1)};
     } else {
         reader.fail(u"unknown event type \"%1\""_s.arg(type));
     }

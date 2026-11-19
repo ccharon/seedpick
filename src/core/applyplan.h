@@ -31,6 +31,7 @@ struct ResultFolders {
 
 // Role of every image, indexed like Session::images(). An override wins. Otherwise rejected
 // images go to Reject, the first topN of the ranking to Keep and all other images to Rest.
+// After an ApplyEvent its keep set replaces the ranking.
 QList<Role> assignRoles(const Session &session, const QList<RankedImage> &ranking);
 
 // Paths relative to the session directory.

@@ -48,6 +48,7 @@ void Session::rebuild()
     m_states = QList<ImageState>(m_images.size());
     m_allDuels.clear();
     m_finished = false;
+    m_applied = false;
 
     m_effective.clear();
     m_effective.reserve(m_events.size());
@@ -94,6 +95,19 @@ bool Session::apply(const Event &event)
                 return true;
             } else if constexpr (std::is_same_v<T, FinishEvent>) {
                 m_finished = true;
+                return true;
+            } else if constexpr (std::is_same_v<T, ApplyEvent>) {
+                // Files missing now were moved by an earlier, cancelled apply.
+                m_finished = true;
+                m_applied = true;
+                for (ImageState &state : m_states) {
+                    state.appliedKeep = false;
+                }
+                for (const QString &file : data.keep) {
+                    if (const qsizetype index = indexOf(file); index >= 0) {
+                        m_states[index].appliedKeep = true;
+                    }
+                }
                 return true;
             }
         },
@@ -159,6 +173,16 @@ QString Session::validate(const Event &event) const
                     return u"duels are not active"_s;
                 }
                 return {};
+            } else if constexpr (std::is_same_v<T, ApplyEvent>) {
+                if (current != Phase::Summary) {
+                    return u"apply is only possible in the summary"_s;
+                }
+                for (const QString &file : data.keep) {
+                    if (indexOf(file) < 0) {
+                        return u"unknown file \"%1\""_s.arg(file);
+                    }
+                }
+                return {};
             }
         },
         event.data);
@@ -181,7 +205,7 @@ bool Session::append(const Event &event, QString *error)
 bool Session::undo()
 {
     const qsizetype last = m_effective.lastIndexOf(true);
-    if (last < 0) {
+    if (last < 0 || std::holds_alternative<ApplyEvent>(m_events.at(last).data)) {
         return false;
     }
     m_events.resize(last);
@@ -264,6 +288,16 @@ std::optional<Role> Session::overrideTarget(qsizetype index) const
 bool Session::isFinished() const
 {
     return m_finished;
+}
+
+bool Session::hasAppliedResult() const
+{
+    return m_applied;
+}
+
+bool Session::isAppliedKeep(qsizetype index) const
+{
+    return m_states.at(index).appliedKeep;
 }
 
 qsizetype Session::activeCount() const

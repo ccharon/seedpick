@@ -608,8 +608,17 @@ void Controller::apply()
         return;
     }
     QStringList files;
-    for (const ImageInfo &image : m_session->images()) {
-        files.append(image.file);
+    QStringList keep;
+    for (qsizetype i = 0; i < m_session->images().size(); ++i) {
+        files.append(m_session->images().at(i).file);
+        if (m_roles.at(i) == Seedpick::Role::Keep) {
+            keep.append(files.last());
+        }
+    }
+    // Fixes the confirmed result in the session file before anything moves, see ApplyEvent.
+    if (!append(ApplyEvent{keep}) || !m_errorMessage.isEmpty()) {
+        Q_EMIT changed();
+        return;
     }
     const ApplyPlan plan = buildApplyPlan(m_directory, files, m_roles, m_settings.folders, m_settings.sidecarExtensions, m_settings.rejectToTrash);
     m_applyDone = 0;
@@ -669,7 +678,7 @@ void Controller::finishApply(const ApplyReport &report)
     }
     const SessionStore store(m_directory);
     if (report.cancelled) {
-        // The session stays. Resuming it drops the moved images from the ranking.
+        // The session stays. Its ApplyEvent keeps the result when it is resumed.
     } else if (m_settings.keepSessionAfterApply) {
         QString error;
         const QString archived = store.archive(&error);

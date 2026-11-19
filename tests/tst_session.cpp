@@ -138,6 +138,38 @@ private Q_SLOTS:
         QCOMPARE(session.overrideTarget(1), std::nullopt);
     }
 
+    void applyFixesKeepSetAndBlocksUndo()
+    {
+        Session session(config(1, true), makeImages(4));
+        appendOrFail(session, Event{FinishEvent{}, {}});
+        QVERIFY(!session.hasAppliedResult());
+        appendOrFail(session, Event{ApplyEvent{{img(2)}}, {}});
+        QVERIFY(session.hasAppliedResult());
+        QVERIFY(session.isAppliedKeep(2));
+        QVERIFY(!session.isAppliedKeep(0));
+        QVERIFY(!session.undo());
+
+        // Overrides after the apply can be undone, the apply itself cannot.
+        appendOrFail(session, Event{OverrideEvent{img(0), Role::Keep}, {}});
+        QVERIFY(session.undo());
+        QVERIFY(!session.undo());
+        QCOMPARE(session.events().size(), 2);
+    }
+
+    void applyKeepSetSurvivesMovedImages()
+    {
+        // After a cancelled apply the moved images are gone, the kept ones are still marked.
+        Session session(config(1), makeImages(4), {screen(0), screen(1), screen(2), screen(3), Event{FinishEvent{}, {}}, Event{ApplyEvent{{img(1)}}, {}}});
+        QList<ImageInfo> remaining = makeImages(4);
+        remaining.removeAt(3);
+        remaining.removeAt(0);
+        session.reconcile(remaining);
+        QCOMPARE(session.phase(), Phase::Summary);
+        QVERIFY(session.hasAppliedResult());
+        QVERIFY(session.isAppliedKeep(session.indexOf(img(1))));
+        QVERIFY(!session.isAppliedKeep(session.indexOf(img(2))));
+    }
+
     void validationRejectsInvalidEvents_data()
     {
         QTest::addColumn<bool>("skipScreening");
@@ -150,6 +182,7 @@ private Q_SLOTS:
         QTest::newRow("reject during screening") << false << Event{RejectEvent{img(0)}, {}};
         QTest::newRow("override during duels") << true << Event{OverrideEvent{img(0), Role::Keep}, {}};
         QTest::newRow("finish during screening") << false << Event{FinishEvent{}, {}};
+        QTest::newRow("apply during duels") << true << Event{ApplyEvent{{img(0)}}, {}};
     }
 
     void validationRejectsInvalidEvents()

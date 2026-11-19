@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seedpick\n"
 "Report-Msgid-Bugs-To: https://github.com/ccharon/seedpick/issues\n"
-"POT-Creation-Date: 2026-11-19 15:57+0100\n"
+"POT-Creation-Date: 2026-11-19 20:44+0100\n"
 "PO-Revision-Date: 2026-11-19 15:57+0100\n"
 "Last-Translator: Christian Charon <ccharon@mailbox.org>\n"
 "Language-Team: German\n"
@@ -109,8 +109,10 @@ msgstr[1] "%1 Dateien verschoben"
 #: src/app/qml/AppliedView.qml:24
 msgid ""
 "The moved files are listed in .seedpick-apply.log.jsonl. The session file "
-"stays. Resuming it ranks the remaining images again."
-msgstr "Die verschobenen Dateien stehen in .seedpick-apply.log.jsonl. Die Sitzungsdatei bleibt erhalten. Beim Fortsetzen werden die übrigen Bilder neu eingereiht."
+"stays. Resuming it continues with the same selection."
+msgstr ""
+"Die verschobenen Dateien stehen in .seedpick-apply.log.jsonl. Die "
+"Sitzungsdatei bleibt erhalten. Beim Fortsetzen gilt dieselbe Auswahl."
 
 #: src/app/qml/AppliedView.qml:24
 msgid "One file could not be moved and stays in place."
@@ -170,7 +172,9 @@ msgstr "Top %1:"
 msgctxt "@info:usagetip"
 msgid ""
 "← → choose   ↑ tie   1 / 2 reject   + − 0 zoom   I info   Backspace undo"
-msgstr "← → wählen   ↑ unentschieden   1 / 2 aussortieren   + − 0 Zoom   I Info   Rücktaste rückgängig"
+msgstr ""
+"← → wählen   ↑ unentschieden   1 / 2 aussortieren   + − 0 Zoom   I Info   "
+"Rücktaste rückgängig"
 
 #: src/app/qml/ImagePane.qml:166
 msgctxt "@label negative prompt, %1 is the prompt"
@@ -280,7 +284,9 @@ msgctxt "@info:usagetip"
 msgid ""
 "→ / Space: OK   ↓ / Del: reject   ← previous   + − 0: zoom   I: info   "
 "Backspace: undo"
-msgstr "→ / Leertaste: OK   ↓ / Entf: aussortieren   ← vorheriges   + − 0: Zoom   I: Info   Rücktaste: rückgängig"
+msgstr ""
+"→ / Leertaste: OK   ↓ / Entf: aussortieren   ← vorheriges   + − 0: Zoom   I: "
+"Info   Rücktaste: rückgängig"
 
 #: src/app/qml/SettingsPage.qml:14
 msgctxt "@title"
@@ -294,7 +300,8 @@ msgstr "Standardwerte"
 
 #: src/app/qml/SettingsPage.qml:41
 msgid "Command line options override these settings for this run: %1"
-msgstr "Kommandozeilenoptionen überschreiben diese Einstellungen für diesen Lauf: %1"
+msgstr ""
+"Kommandozeilenoptionen überschreiben diese Einstellungen für diesen Lauf: %1"
 
 #: src/app/qml/SettingsPage.qml:49
 msgctxt "@title:group"
@@ -334,7 +341,9 @@ msgstr "%1 %"
 #: src/app/qml/SettingsPage.qml:100
 msgid ""
 "Expected share of wrong picks in the selection. Lower values need more duels."
-msgstr "Erwarteter Anteil falsch gewählter Bilder in der Auswahl. Kleinere Werte brauchen mehr Duelle."
+msgstr ""
+"Erwarteter Anteil falsch gewählter Bilder in der Auswahl. Kleinere Werte "
+"brauchen mehr Duelle."
 
 #: src/app/qml/SettingsPage.qml:108
 msgctxt "@title:group"
@@ -365,7 +374,9 @@ msgstr "Ordner für aussortierte Bilder:"
 msgid ""
 "A folder name must not contain \"/\" or start or end with a space. Only the "
 "folder for kept images may stay empty."
-msgstr "Ein Ordnername darf kein \"/\" enthalten und nicht mit einem Leerzeichen beginnen oder enden. Nur der Ordner für behaltene Bilder darf leer bleiben."
+msgstr ""
+"Ein Ordnername darf kein \"/\" enthalten und nicht mit einem Leerzeichen "
+"beginnen oder enden. Nur der Ordner für behaltene Bilder darf leer bleiben."
 
 #: src/app/qml/SettingsPage.qml:137
 msgctxt "@option:check"
@@ -484,7 +495,9 @@ msgctxt "@info:usagetip"
 msgid ""
 "Drag images to another column or right-click them. Nothing is moved before "
 "Apply."
-msgstr "Bilder in eine andere Spalte ziehen oder rechts anklicken. Vor „Anwenden“ wird nichts verschoben."
+msgstr ""
+"Bilder in eine andere Spalte ziehen oder rechts anklicken. Vor „Anwenden“ "
+"wird nichts verschoben."
 
 #: src/app/qml/SummaryView.qml:133
 msgctxt "@action:button"
@@ -531,7 +544,9 @@ msgstr[1] "Aussortiert: %1 Bilder → %2"
 
 #: src/app/qml/SummaryView.qml:165
 msgid "Sidecar files move along. Existing files are never overwritten."
-msgstr "Begleitdateien werden mitverschoben. Vorhandene Dateien werden nie überschrieben."
+msgstr ""
+"Begleitdateien werden mitverschoben. Vorhandene Dateien werden nie "
+"überschrieben."
 
 #: src/app/qml/SummaryView.qml:170
 msgctxt "@action:button"

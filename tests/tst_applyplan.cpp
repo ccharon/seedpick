@@ -155,6 +155,28 @@ private Q_SLOTS:
         QCOMPARE(roles, (QList<Role>{Role::Reject, Role::Keep, Role::Rest, Role::Keep, Role::Reject}));
     }
 
+    void appliedKeepSetReplacesRanking()
+    {
+        QList<ImageInfo> images;
+        for (int i = 0; i < 4; ++i) {
+            images.append({u"img%1.png"_s.arg(i), 1, QDateTime(QDate(2026, 1, 1), QTime(0, 0), QTimeZone::UTC)});
+        }
+        SessionConfig config;
+        config.topN = 2;
+        config.skipScreening = true;
+        Session session(config, images);
+        QVERIFY(session.append({FinishEvent{}, {}}));
+        QVERIFY(session.append({ApplyEvent{{u"img2.png"_s, u"img3.png"_s}}, {}}));
+        QVERIFY(session.append({OverrideEvent{u"img3.png"_s, Role::Rest}, {}}));
+
+        // The ranking now prefers img0 and img1, the confirmed keep set wins and the later override still applies.
+        QList<RankedImage> ranking;
+        for (qsizetype image : {0, 1, 2, 3}) {
+            ranking.append(RankedImage{image, 0, 0, 0, 0});
+        }
+        QCOMPARE(Seedpick::assignRoles(session, ranking), (QList<Role>{Role::Rest, Role::Rest, Role::Keep, Role::Rest}));
+    }
+
     void plansMovesWithSidecars()
     {
         QTemporaryDir dir;

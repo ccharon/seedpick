@@ -30,9 +30,9 @@ void createImages(const QString &directory, int count)
     }
 }
 
-QJsonArray storedEvents(const QString &directory)
+QJsonArray storedEvents(const QString &directory, const QString &fileName = {})
 {
-    QFile file(Seedpick::SessionStore(directory).path());
+    QFile file(fileName.isEmpty() ? Seedpick::SessionStore(directory).path() : QDir(directory).filePath(fileName));
     if (!file.open(QIODevice::ReadOnly)) {
         return {};
     }
@@ -275,6 +275,15 @@ private Q_SLOTS:
         QVERIFY(!Seedpick::SessionStore(dir.path()).exists());
         QCOMPARE(controller.archivedSession(), u".seedpick-session.done.json"_s);
         QVERIFY(QFile::exists(result.filePath(controller.archivedSession())));
+        // The confirmed keep set is the last event, a cancelled apply would resume with it.
+        const QJsonObject applyEvent = storedEvents(dir.path(), controller.archivedSession()).last().toObject();
+        QCOMPARE(applyEvent.value("t"_L1).toString(), u"apply"_s);
+        QStringList storedKeep;
+        for (const QJsonValue &file : applyEvent.value("keep"_L1).toArray()) {
+            storedKeep.append(file.toString());
+        }
+        storedKeep.sort();
+        QCOMPARE(storedKeep, expectedKeep);
         QVERIFY(QFile::exists(result.filePath(u".seedpick-apply.log.jsonl"_s)));
 
         controller.closeSession();
