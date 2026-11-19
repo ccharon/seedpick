@@ -1,0 +1,76 @@
+# SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+# SPDX-License-Identifier: CC0-1.0
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+    # Ubuntu has no KF6 yet, Fedora ships current Qt 6 and KF6.
+    container:
+      image: fedora:45
+      # LeakSanitizer needs ptrace.
+      options: --cap-add SYS_PTRACE
+    steps:
+      - name: Install dependencies
+        run: >
+          dnf -y install
+          cmake ninja-build gcc-c++ git
+          extra-cmake-modules
+          qt6-qtbase-devel qt6-qtdeclarative-devel
+          kf6-kconfig-devel kf6-kcoreaddons-devel kf6-ki18n-devel kf6-kirigami-devel
+          libasan libubsan gettext appstream desktop-file-utils
+
+      - uses: actions/checkout@v5
+
+      - name: Trust the checkout
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Configure
+        run: cmake --preset dev
+
+      - name: Build
+        run: cmake --build --preset dev
+
+      # The dev preset builds with ASan/UBSan, so the simulation runs in its short form.
+      - name: Test
+        run: ctest --preset dev
+
+      - name: Validate metadata
+        run: |
+          appstreamcli validate --no-net data/io.github.ccharon.seedpick.metainfo.xml
+          desktop-file-validate data/io.github.ccharon.seedpick.desktop
+
+  format:
+    name: clang-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Pinned to the version used locally, newer versions may format differently.
+      - name: Install clang-format
+        run: pipx install clang-format==22.1.8
+
+      - name: Check formatting
+        run: git ls-files 'src/*.cpp' 'src/*.h' 'tests/*.cpp' 'tests/*.h' | xargs clang-format --dry-run --Werror
+
+  reuse:
+    name: REUSE
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: fsfe/reuse-action@v5

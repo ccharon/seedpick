@@ -5,6 +5,8 @@ SPDX-License-Identifier: CC0-1.0
 
 # Seedpick
 
+[![CI](https://github.com/ccharon/seedpick/actions/workflows/ci.yml/badge.svg)](https://github.com/ccharon/seedpick/actions/workflows/ci.yml)
+
 KDE image viewer for picking the n best images from a folder by pairwise comparison.
 Two images are shown side by side and the arrow keys choose the better one.
 A Bradley-Terry model selects the next pair. The selected images stay in the folder, the others move into `_rest` and `_reject`.
