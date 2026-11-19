@@ -8,6 +8,8 @@ add_library(seedpickcore STATIC
     event.h
     imagescanner.cpp
     imagescanner.h
+    session.cpp
+    session.h
     version.cpp
     version.h
 )

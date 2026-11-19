@@ -4,6 +4,7 @@
 ecm_add_tests(
     tst_event.cpp
     tst_imagescanner.cpp
+    tst_session.cpp
     tst_version.cpp
     LINK_LIBRARIES seedpickcore Qt6::Test
 )
