@@ -25,6 +25,10 @@ Kirigami.ApplicationWindow {
         onActivated: Controller.undo()
     }
     Shortcut {
+        sequence: StandardKey.Quit
+        onActivated: Qt.quit()
+    }
+    Shortcut {
         sequence: "F"
         onActivated: root.toggleFullScreen()
     }
