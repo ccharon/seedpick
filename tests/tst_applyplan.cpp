@@ -76,12 +76,43 @@ public:
         return m_local.move(source, target, error);
     }
 
+    bool moveToTrash(const QString &source, QString *trashedPath, QString *error) override
+    {
+        return m_local.moveToTrash(source, trashedPath, error);
+    }
+
 private:
     QStringList m_failing;
     LocalFileMover m_local;
 };
 
 const QStringList noSidecars;
+
+class EnvironmentOverride
+{
+public:
+    EnvironmentOverride(const char *name, const QString &value)
+        : m_name(name)
+        , m_previous(qgetenv(name))
+        , m_wasSet(qEnvironmentVariableIsSet(name))
+    {
+        qputenv(name, value.toLocal8Bit());
+    }
+    ~EnvironmentOverride()
+    {
+        if (m_wasSet) {
+            qputenv(m_name, m_previous);
+        } else {
+            qunsetenv(m_name);
+        }
+    }
+    Q_DISABLE_COPY_MOVE(EnvironmentOverride)
+
+private:
+    const char *m_name;
+    QByteArray m_previous;
+    bool m_wasSet;
+};
 }
 
 class TestApplyPlan : public QObject
@@ -303,6 +334,37 @@ private Q_SLOTS:
         QCOMPARE(report.moved, 0);
         QVERIFY(QFileInfo::exists(dir.filePath(u"a.png"_s)));
         QCOMPARE(readFile(dir.filePath(ApplyLog::fileName())), QByteArray("{ broken"));
+    }
+
+    void rejectToTrash()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        // Home and data directory inside the temporary directory: Qt then uses the home trash
+        // there instead of a trash at the top of the file system.
+        const EnvironmentOverride home("HOME", dir.path());
+        const EnvironmentOverride data("XDG_DATA_HOME", dir.filePath(u"data"_s));
+        createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s});
+
+        const ApplyPlan plan =
+            buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Reject, Role::Keep}, ResultFolders{}, defaultSidecarExtensions(), true);
+        QVERIFY(plan.items.at(0).toTrash);
+        QCOMPARE(plan.items.at(0).moves, (QList<FileMove>{{u"a.png"_s, {}}, {u"a.txt"_s, {}}}));
+        QVERIFY(!plan.items.at(1).toTrash);
+
+        LocalFileMover mover;
+        ApplyLog log(dir.path());
+        const ApplyReport report = executeApplyPlan(dir.path(), plan, mover, log);
+        QVERIFY2(report.succeeded(), qPrintable(report.errors.isEmpty() ? report.logError : report.errors.first().message));
+        QCOMPARE(report.moved, 3);
+        const QString trash = dir.filePath(u"data/Trash"_s);
+        QCOMPARE(readFile(trash + u"/files/a.png"_s), QByteArray("a.png"));
+        QCOMPARE(readFile(trash + u"/files/a.txt"_s), QByteArray("a.txt"));
+        QVERIFY(QFileInfo::exists(trash + u"/info/a.png.trashinfo"_s));
+        QVERIFY(!QFileInfo::exists(dir.filePath(u"_reject"_s)));
+
+        const QJsonArray moves = readJson(log.path()).value("applies"_L1).toArray().first().toObject().value("moves"_L1).toArray();
+        QCOMPARE(QFileInfo(moves.at(0).toObject().value("target"_L1).toString()).canonicalFilePath(), QFileInfo(trash + u"/files/a.png"_s).canonicalFilePath());
     }
 
     void archiveKeepsEarlierArchives()

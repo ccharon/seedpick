@@ -91,7 +91,8 @@ ApplyPlan buildApplyPlan(const QString &directory,
                          const QStringList &images,
                          const QList<Role> &roles,
                          const ResultFolders &folders,
-                         const QStringList &sidecarExtensions)
+                         const QStringList &sidecarExtensions,
+                         bool rejectToTrash)
 {
     Q_ASSERT(images.size() == roles.size());
     const QDir dir(directory);
@@ -101,6 +102,14 @@ ApplyPlan buildApplyPlan(const QString &directory,
     ApplyPlan plan;
     for (qsizetype i = 0; i < images.size(); ++i) {
         const QString &image = images.at(i);
+        if (rejectToTrash && roles.at(i) == Role::Reject) {
+            ApplyItem item{image, Role::Reject, true, {{image, {}}}};
+            for (const QString &sidecar : sidecars.value(image)) {
+                item.moves.append({sidecar, {}});
+            }
+            plan.items.append(item);
+            continue;
+        }
         const QString folder = folders.name(roles.at(i));
         if (!taken.contains(folder)) {
             taken.insert(folder, existingNames(dir.filePath(folder)));
@@ -121,7 +130,7 @@ ApplyPlan buildApplyPlan(const QString &directory,
                 continue;
             }
 
-            ApplyItem item{image, roles.at(i), {}};
+            ApplyItem item{image, roles.at(i), false, {}};
             item.moves.append({image, folder + u'/' + renamed});
             for (qsizetype s = 0; s < companions.size(); ++s) {
                 item.moves.append({companions.at(s), folder + u'/' + targets.at(s + 1)});
@@ -155,9 +164,10 @@ executeApplyPlan(const QString &directory, const ApplyPlan &plan, FileMover &mov
     }
     for (const ApplyItem &item : plan.items) {
         for (qsizetype m = 0; m < item.moves.size(); ++m) {
-            const FileMove &move = item.moves.at(m);
+            FileMove move = item.moves.at(m);
             QString error;
-            const bool moved = mover.move(dir.filePath(move.source), dir.filePath(move.target), &error);
+            const bool moved = item.toTrash ? mover.moveToTrash(dir.filePath(move.source), &move.target, &error)
+                                            : mover.move(dir.filePath(move.source), dir.filePath(move.target), &error);
             const QDateTime at = QDateTime::currentDateTimeUtc();
             const bool logged = moved ? log.recordMove(move, at, &report.logError) : log.recordError(move, error, at, &report.logError);
             if (moved) {

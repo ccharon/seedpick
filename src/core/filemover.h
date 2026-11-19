@@ -14,6 +14,8 @@ public:
     virtual ~FileMover();
     // Absolute paths. Creates missing parent directories of the target.
     virtual bool move(const QString &source, const QString &target, QString *error) = 0;
+    // Moves the file into the freedesktop.org trash and sets `trashedPath` to its path there.
+    virtual bool moveToTrash(const QString &source, QString *trashedPath, QString *error) = 0;
 };
 
 // Moves within the local file system: rename, or copy + verify + remove across file systems.
@@ -29,6 +31,7 @@ public:
 
     explicit LocalFileMover(Method method = Method::Rename);
     bool move(const QString &source, const QString &target, QString *error) override;
+    bool moveToTrash(const QString &source, QString *trashedPath, QString *error) override;
 
 private:
     bool copyMove(const QString &source, const QString &target, QString *error) const;

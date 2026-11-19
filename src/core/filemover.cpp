@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QStandardPaths>
 
 #include <cerrno>
 #include <cstdio>
@@ -124,6 +125,26 @@ bool LocalFileMover::move(const QString &source, const QString &target, QString 
         break;
     }
     return setError(error, u"cannot move %1 to %2: %3"_s.arg(source, target, systemError(code)));
+}
+
+bool LocalFileMover::moveToTrash(const QString &source, QString *trashedPath, QString *error)
+{
+    const QFileInfo sourceInfo(source);
+    if (!sourceInfo.isFile() || sourceInfo.isSymLink()) {
+        return setError(error, u"%1 is not a regular file"_s.arg(source));
+    }
+    // Qt picks the trash at the top of the source's file system or the home trash and
+    // reserves a unique name there. It creates the home trash only inside an existing
+    // data directory.
+    QDir().mkpath(QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation));
+    QString path;
+    if (!QFile::moveToTrash(source, &path)) {
+        return setError(error, u"cannot move %1 to the trash"_s.arg(source));
+    }
+    if (trashedPath) {
+        *trashedPath = path;
+    }
+    return true;
 }
 
 bool LocalFileMover::copyMove(const QString &source, const QString &target, QString *error) const

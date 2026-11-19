@@ -41,6 +41,8 @@ struct FileMove {
 struct ApplyItem {
     QString image;
     Role role = Role::Keep;
+    // The files go to the trash. Their targets stay empty, the trash picks the names.
+    bool toTrash = false;
     // The first move is the image itself, the others are its sidecars.
     QList<FileMove> moves;
 };
@@ -54,11 +56,13 @@ struct ApplyPlan {
 // Plans moving every image and its sidecars into the folder of its role. `roles` is indexed like
 // `images`. A name already taken in the target folder, on disk or earlier in the plan, gets "-1",
 // "-2", … before the extension. The image and its sidecars always get the same suffix.
+// With `rejectToTrash`, rejected images and their sidecars go to the trash instead.
 ApplyPlan buildApplyPlan(const QString &directory,
                          const QStringList &images,
                          const QList<Role> &roles,
                          const ResultFolders &folders,
-                         const QStringList &sidecarExtensions);
+                         const QStringList &sidecarExtensions,
+                         bool rejectToTrash = false);
 
 struct ApplyError {
     // Relative path of the file that was not moved.
@@ -79,6 +83,7 @@ struct ApplyReport {
 };
 
 // Moves the files of the plan and records each move in the log before the next one starts.
+// Moves into the trash are logged with the absolute path in the trash as target.
 // A failed file does not stop the others. When an image fails, its sidecars stay with it.
 // `progress` receives the number of handled files and the total.
 ApplyReport executeApplyPlan(const QString &directory,
