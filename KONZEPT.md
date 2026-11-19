@@ -106,20 +106,25 @@ Datei `.seedpick-session.json` im Arbeitsverzeichnis, versioniertes Schema:
 {
   "schema": 1,
   "createdAt": "…", "updatedAt": "…",
-  "config": { "n": 5, "minDuels": 2, "rngSeed": 123456 },
+  "config": { "n": 5, "minDuels": 2, "rngSeed": 123456, "skipScreening": false },
   "images": [ { "file": "img_0001.png", "size": 1234567, "mtime": "…" } ],
   "events": [
-    { "t": "screen", "file": "img_0001.png", "verdict": "ok" },
-    { "t": "screen", "file": "img_0002.png", "verdict": "reject" },
-    { "t": "duel", "left": "img_0001.png", "right": "img_0007.png", "result": "left" },
-    { "t": "duel", "left": "…", "right": "…", "result": "tie" },
-    { "t": "reject", "file": "…" },
-    { "t": "override", "file": "…", "target": "keep" }
+    { "t": "screen", "at": "2026-11-19T10:15:02.120Z", "file": "img_0001.png", "verdict": "ok" },
+    { "t": "screen", "at": "…", "file": "img_0002.png", "verdict": "reject" },
+    { "t": "duel", "at": "…", "left": "img_0001.png", "right": "img_0007.png", "result": "left" },
+    { "t": "duel", "at": "…", "left": "…", "right": "…", "result": "tie" },
+    { "t": "reject", "at": "…", "file": "…" },
+    { "t": "finish", "at": "…" },
+    { "t": "override", "at": "…", "file": "…", "target": "keep" }
   ]
 }
 ```
 
-- **Das Event-Log ist die einzige Wahrheit.** Der Zustand (Phase, Ratings, Zuordnung) wird immer daraus abgeleitet. Undo bedeutet, das letzte Event zu entfernen.
+- **Das Event-Log ist die einzige Wahrheit.** Der Zustand (Phase, Ratings, Zuordnung) wird immer daraus abgeleitet. Undo entfernt das letzte wirksame Event. Events zu Dateien, die nicht mehr vorhanden sind, bleiben im Log, wirken aber nicht.
+- `at` ist der Zeitpunkt des Events (ISO 8601, UTC, Millisekunden). Das Feld ist optional und beeinflusst den abgeleiteten Zustand nicht.
+- `finish` beendet Phase 2 vorzeitig („jetzt beenden“). Undo nimmt es zurück.
+- `skipScreening` gehört zur Sitzung, weil es bestimmt, ob ungesichtete Bilder an Duellen teilnehmen.
+- Unbekannte Felder werden beim Lesen ignoriert. Unbekannte oder fehlerhafte Events lassen das Laden scheitern, damit beim nächsten Speichern nichts verloren geht.
 - Gespeichert wird nach jedem Event, atomar (`QSaveFile`).
 - Beim Fortsetzen: Fehlende Dateien werden aus der Wertung entfernt. Neue Dateien kommen als ungesichtet dazu. Geänderte Dateien (size/mtime) erzeugen eine Warnung.
 - Nach „Anwenden“ wird die Sitzungsdatei in `.seedpick-session.done.json` umbenannt (Nachvollziehbarkeit) oder gelöscht (Konfig).
