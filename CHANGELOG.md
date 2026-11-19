@@ -20,6 +20,8 @@ The project uses [Semantic Versioning](https://semver.org/).
 - Result page with three columns, drag and drop and context menu corrections.
 - Apply: moves images and sidecar files into `_keep`, `_rest` and `_reject` without overwriting, writes `.seedpick-apply.log.json` and archives the session file.
 - Ctrl+Q quits.
+- Settings page and `seedpickrc` configuration for all options, command line options for a single run.
+- Rejected images can go to the trash instead of a folder.
 
 ### Fixed
 

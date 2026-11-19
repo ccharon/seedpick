@@ -15,7 +15,7 @@ Status: early development, nothing is usable yet.
 
 ## Build
 
-Requirements: CMake 3.22 (3.25 for the presets), Ninja, ECM, Qt 6.6, KF6 6.8 (CoreAddons, I18n, Kirigami).
+Requirements: CMake 3.22 (3.25 for the presets), Ninja, ECM, Qt 6.6, KF6 6.8 (Config, CoreAddons, I18n, Kirigami).
 Runtime: kimageformats, qqc2-desktop-style.
 
 ```sh
@@ -34,6 +34,25 @@ ctest --preset dev
 |---|---|---|---|
 | `BUILD_APP` | bool | `ON` | `OFF` builds only the core library and its tests |
 | `BUILD_TESTING` | bool | `ON` | Builds the unit tests |
+
+## Usage
+
+```sh
+seedpick [options] [directory]
+```
+
+| Option | Effect for this run |
+|---|---|
+| `-n, --top <count>` | Number of images to keep |
+| `--keep-dir <name>` | Folder for the kept images (default `_keep`) |
+| `--rest-dir <name>` | Folder for the remaining images (default `_rest`) |
+| `--reject-dir <name>` | Folder for rejected images (default `_reject`) |
+| `--reject-to-trash` | Move rejected images to the trash |
+| `--skip-screening` | Start new sessions without screening |
+
+The settings page (gear icon) stores the defaults in `~/.config/seedpickrc`. Command line options are never stored.
+
+## Development
 
 Formatting uses the KDE clang-format style. `ninja -C build/dev clang-format` formats all sources.
 A git pre-commit hook that checks formatting is installed at configure time.

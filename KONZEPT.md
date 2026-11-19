@@ -187,6 +187,13 @@ KConfigXT (`seedpick.kcfg` + `.kcfgc`), Einstellungsdialog in Kirigami. Alle Wer
 
 CLI-Aufruf: `seedpick [optionen] [verzeichnis]` über `QCommandLineParser` + `KAboutData`.
 
+Umsetzung (M5):
+- Die Konfiguration liegt in `~/.config/seedpickrc`. Die Einstellungsseite speichert jede Änderung sofort.
+- CLI-Optionen gelten nur für den Lauf und werden nie gespeichert. Die Einstellungsseite nennt die aktiven Optionen. `--reject-to-trash` und `--skip-screening` können einen Wert nur einschalten.
+- Ungültige gespeicherte Werte werden beim Lesen ersetzt: Ordnernamen mit `/`, leer, `.` oder `..` durch den Standard, Zahlen auf ihren Bereich begrenzt, leere Endungen entfernt. Ungültige CLI-Werte beenden das Programm mit einer Fehlermeldung.
+- `MinDuels` wirkt beim Anlegen einer Sitzung und steht danach in der Sitzungsdatei. `ConfidenceThreshold` wirkt sofort, auch in laufenden Sitzungen.
+- `RejectToTrash` nutzt `QFile::moveToTrash` (freedesktop.org-Spezifikation, ohne KIO). Damit ist der Trash-Punkt aus M8 vorgezogen. Das Apply-Log hält den Pfad im Papierkorb fest.
+
 ## 7. Architektur
 
 ```
@@ -290,7 +297,7 @@ GPL-2.0-or-later für den Code, CC0-1.0 für Metadaten, REUSE-konform (SPDX-Head
 | M5 | KConfigXT, Einstellungsseite, CLI-Optionen | alle Werte aus §6 wirksam |
 | M6 | Gentoo: 9999-Ebuild + Vorlage + Release-Skript | `ebuild … install` lokal erfolgreich |
 | M7 | CI + AppImage + Release-Workflow | Tag `v0.1.0` erzeugt lauffähiges AppImage |
-| M8 | Feinschliff: synchroner Zoom, Metadaten/Prompt-Anzeige (PNG-tEXt, ComfyUI/A1111), i18n de, Trash, `--undo-apply` | nach Bedarf |
+| M8 | Feinschliff: synchroner Zoom, Metadaten/Prompt-Anzeige (PNG-tEXt, ComfyUI/A1111), i18n de, Trash (in M5 erledigt), `--undo-apply` | nach Bedarf |
 
 ## 11. Offene Fragen (vor/während M0 klären)
 
