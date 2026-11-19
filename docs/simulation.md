@@ -73,5 +73,7 @@ Default settings, logistic noise with 10 % error rate, 100 runs per row.
 ## Known limitations
 
 - With noisy answers the stopping criterion rarely fires. The model's hit rate estimate is conservative, so sessions usually end at the budget.
-- For n = 1 the hit rate is 0.70 to 0.77. Allowing 3 decisive repeats per pair raises it to 0.78 at N=100 but lowers n = 5 slightly.
+- The budget of 2.5 N is the knee. At N=100, n=5 the hit rate is 0.76 at 1.5 N, 0.83 at 2 N, 0.87 at 2.5 N and 0.88 at 3.5 N.
+- For n = 1 the hit rate is 0.70 to 0.77 and does not improve with a larger budget (0.72 at 3.5 N). The regret stays below 0.1, so a missed image is close in quality to the true best.
+- For n = 1, allowing 3 decisive repeats per pair raises the hit rate to 0.78 at N=100 but lowers n = 5 slightly.
 - With the flip noise model (10 % wrong answers regardless of the gap) the hit rate at N=100, n=5 is 0.77 at 2.5 N comparisons.
