@@ -12,3 +12,13 @@ SPDX-License-Identifier = "CC0-1.0"
 path = ["KONZEPT.md", "LANGSTYLE.md"]
 SPDX-FileCopyrightText = "2026 Christian Charon <ccharon@mailbox.org>"
 SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["packaging/gentoo/**/*.ebuild", "packaging/templates/seedpick.ebuild.in"]
+SPDX-FileCopyrightText = "2026 Christian Charon <ccharon@mailbox.org>"
+SPDX-License-Identifier = "GPL-2.0-or-later"
+
+[[annotations]]
+path = ["packaging/gentoo/metadata/layout.conf", "packaging/gentoo/profiles/repo_name", "packaging/gentoo/**/metadata.xml"]
+SPDX-FileCopyrightText = "2026 Christian Charon <ccharon@mailbox.org>"
+SPDX-License-Identifier = "CC0-1.0"
