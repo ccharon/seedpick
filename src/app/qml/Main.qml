@@ -18,6 +18,11 @@ Kirigami.ApplicationWindow {
     // Page shortcuts stay off while a layer such as the settings covers the page.
     readonly property bool pageKeysActive: pageStack.layers.depth <= 1
 
+    function toggleImageInfo() {
+        Config.showImageInfo = !Config.showImageInfo;
+        Config.save();
+    }
+
     function openSettings() {
         if (root.pageKeysActive) {
             root.pageStack.layers.push(settingsComponent);
@@ -41,6 +46,11 @@ Kirigami.ApplicationWindow {
         sequence: "F"
         enabled: root.pageKeysActive
         onActivated: root.toggleFullScreen()
+    }
+    Shortcut {
+        sequence: "I"
+        enabled: root.pageKeysActive
+        onActivated: root.toggleImageInfo()
     }
     Shortcut {
         sequence: StandardKey.Preferences
@@ -98,6 +108,15 @@ Kirigami.ApplicationWindow {
                 visible: Controller.state === Controller.Screening || Controller.state === Controller.Duels || Controller.state === Controller.Summary
                 enabled: !Controller.applying
                 onTriggered: Controller.closeSession()
+            },
+            Kirigami.Action {
+                icon.name: "documentinfo"
+                text: i18nc("@action:button", "Image Info")
+                displayHint: Kirigami.DisplayHint.IconOnly
+                checkable: true
+                checked: Config.showImageInfo
+                visible: Controller.state === Controller.Screening || Controller.state === Controller.Duels
+                onTriggered: root.toggleImageInfo()
             },
             Kirigami.Action {
                 icon.name: "configure"

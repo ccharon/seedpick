@@ -83,6 +83,9 @@ ColumnLayout {
             label: Controller.leftFile
             decodeSize: view.decodeSize
             zoomState: zoom
+            showInfo: Config.showImageInfo
+            info: Controller.imageInfo(Controller.leftFile)
+            compareInfo: Controller.imageInfo(Controller.rightFile)
         }
         ImagePane {
             Layout.fillWidth: true
@@ -92,6 +95,9 @@ ColumnLayout {
             label: Controller.rightFile
             decodeSize: view.decodeSize
             zoomState: zoom
+            showInfo: Config.showImageInfo
+            info: Controller.imageInfo(Controller.rightFile)
+            compareInfo: Controller.imageInfo(Controller.leftFile)
         }
     }
 
@@ -159,7 +165,7 @@ ColumnLayout {
         }
 
         QQC2.Label {
-            text: i18nc("@info:usagetip", "← → choose   ↑ tie   1 / 2 reject   + − 0 zoom   Backspace undo")
+            text: i18nc("@info:usagetip", "← → choose   ↑ tie   1 / 2 reject   + − 0 zoom   I info   Backspace undo")
             opacity: 0.7
         }
     }

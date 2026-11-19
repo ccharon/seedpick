@@ -9,6 +9,7 @@
 #include <QJsonObject>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QtEndian>
 
 #include "controller.h"
 #include "imageurl.h"
@@ -312,6 +313,38 @@ private Q_SLOTS:
         QCOMPARE(QDir(result.filePath(u"_rest2"_s)).entryList(QDir::Files).size(), 1);
         QVERIFY(controller.archivedSession().isEmpty());
         QCOMPARE(result.entryList(QDir::Files | QDir::Hidden), QStringList{u".seedpick-apply.log.jsonl"_s});
+    }
+
+    void imageInfoReadsPngText()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createImages(dir.path(), 1);
+        auto uint32 = [](quint32 value) {
+            QByteArray bytes(4, '\0');
+            qToBigEndian(value, bytes.data());
+            return bytes;
+        };
+        const QByteArray header = uint32(64) + uint32(32) + QByteArray("\x08\x06\x00\x00\x00", 5);
+        const QByteArray text = "parameters\0a rabbit\nSteps: 20, Seed: 7"_ba;
+        QFile png(QDir(dir.path()).filePath(u"info.png"_s));
+        QVERIFY(png.open(QIODevice::WriteOnly));
+        png.write(QByteArray("\x89PNG\r\n\x1a\n", 8) + uint32(13) + "IHDR" + header + uint32(0) + uint32(quint32(text.size())) + "tEXt" + text + uint32(0)
+                  + uint32(0) + "IEND" + uint32(0));
+        png.close();
+
+        Controller controller(extensions);
+        controller.openPath(dir.path());
+        const QVariantMap info = controller.imageInfo(u"info.png"_s);
+        QCOMPARE(info.value(u"generator"_s).toString(), u"A1111"_s);
+        QCOMPARE(info.value(u"prompt"_s).toString(), u"a rabbit"_s);
+        QCOMPARE(info.value(u"width"_s).toInt(), 64);
+        const QVariantList settings = info.value(u"settings"_s).toList();
+        QCOMPARE(settings.size(), 2);
+        QCOMPARE(settings.at(1).toMap().value(u"label"_s).toString(), u"Seed"_s);
+        QCOMPARE(settings.at(1).toMap().value(u"value"_s).toString(), u"7"_s);
+        QVERIFY(controller.imageInfo(u"img00.png"_s).isEmpty());
+        QVERIFY(controller.imageInfo(u"missing.png"_s).isEmpty());
     }
 
     void invalidDirectoryIsReported()

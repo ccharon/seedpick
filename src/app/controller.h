@@ -8,12 +8,14 @@
 #include "session.h"
 #include "settings.h"
 
+#include <QHash>
 #include <QList>
 #include <QObject>
 #include <QPointer>
 #include <QStringList>
 #include <QUrl>
 #include <QVariantList>
+#include <QVariantMap>
 #include <QtQml/qqmlregistration.h>
 
 #include <atomic>
@@ -133,6 +135,9 @@ public:
     QStringList overriddenSettings() const;
     void setOverriddenSettings(const QStringList &keys);
     Q_INVOKABLE bool isValidFolderName(const QString &name) const;
+    // Generation info of an image in the current directory: generator, prompt, negativePrompt,
+    // settings (list of {label, value}), width and height. Empty for files without PNG text.
+    Q_INVOKABLE QVariantMap imageInfo(const QString &file) const;
 
     int storedEventCount() const;
     QStringList removedFiles() const;
@@ -230,6 +235,7 @@ private:
 
     Settings m_settings;
     QStringList m_overriddenSettings;
+    mutable QHash<QString, QVariantMap> m_imageInfo;
     // Indices into Session::images() in display order: ranking first, then the rest.
     QList<qsizetype> m_summaryOrder;
     QList<Seedpick::Role> m_roles;

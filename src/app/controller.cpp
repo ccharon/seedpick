@@ -5,6 +5,7 @@
 
 #include "applylog.h"
 #include "filemover.h"
+#include "imagemetadata.h"
 #include "imagescanner.h"
 #include "imageurl.h"
 #include "sessionstore.h"
@@ -166,6 +167,35 @@ void Controller::setOverriddenSettings(const QStringList &keys)
 bool Controller::isValidFolderName(const QString &name) const
 {
     return ::isValidFolderName(name);
+}
+
+QVariantMap Controller::imageInfo(const QString &file) const
+{
+    if (file.isEmpty() || m_directory.isEmpty()) {
+        return {};
+    }
+    const auto cached = m_imageInfo.constFind(file);
+    if (cached != m_imageInfo.cend()) {
+        return *cached;
+    }
+    QVariantMap result;
+    if (const std::optional<PngInfo> png = readPngInfo(QDir(m_directory).filePath(file))) {
+        const GenerationInfo info = parseGenerationInfo(png->texts);
+        QVariantList settings;
+        for (const auto &[label, value] : info.settings) {
+            settings.append(QVariantMap{{u"label"_s, label}, {u"value"_s, value}});
+        }
+        result = {
+            {u"generator"_s, info.generator},
+            {u"prompt"_s, info.prompt},
+            {u"negativePrompt"_s, info.negativePrompt},
+            {u"settings"_s, settings},
+            {u"width"_s, png->size.width()},
+            {u"height"_s, png->size.height()},
+        };
+    }
+    m_imageInfo.insert(file, result);
+    return result;
 }
 
 int Controller::storedEventCount() const
@@ -381,6 +411,7 @@ void Controller::openPath(const QString &path)
     m_applyReport.reset();
     m_archivedSession.clear();
     m_errorMessage.clear();
+    m_imageInfo.clear();
     m_directory = info.canonicalFilePath();
     m_storedEventCount = 0;
 
@@ -470,6 +501,7 @@ void Controller::closeSession()
     m_applyReport.reset();
     m_archivedSession.clear();
     m_errorMessage.clear();
+    m_imageInfo.clear();
     m_directory.clear();
     refresh();
 }

@@ -57,6 +57,8 @@ ColumnLayout {
         source: Controller.currentUrl
         label: Controller.currentFile
         zoomState: zoom
+        showInfo: Config.showImageInfo
+        info: Controller.imageInfo(Controller.currentFile)
         decodeSize: Qt.size(Math.round(width * Screen.devicePixelRatio), Math.round(height * Screen.devicePixelRatio))
 
         Kirigami.Chip {
@@ -100,7 +102,7 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         QQC2.Label {
-            text: Controller.viewingHistory ? i18nc("@info:usagetip", "→ back to current image   ← previous") : i18nc("@info:usagetip", "→ / Space: OK   ↓ / Del: reject   ← previous   + − 0: zoom   Backspace: undo")
+            text: Controller.viewingHistory ? i18nc("@info:usagetip", "→ back to current image   ← previous") : i18nc("@info:usagetip", "→ / Space: OK   ↓ / Del: reject   ← previous   + − 0: zoom   I: info   Backspace: undo")
             opacity: 0.7
         }
     }
