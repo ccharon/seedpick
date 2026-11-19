@@ -38,6 +38,7 @@ ecm_target_qml_sources(seedpick SOURCES
     qml/StartView.qml
     qml/SummaryColumn.qml
     qml/SummaryView.qml
+    qml/ZoomState.qml
 )
 
 target_link_libraries(seedpick PRIVATE

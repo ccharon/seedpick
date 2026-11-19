@@ -12,6 +12,28 @@ ColumnLayout {
 
     spacing: 0
 
+    ZoomState {
+        id: zoom
+    }
+    readonly property string shown: Controller.currentFile
+    onShownChanged: zoom.reset()
+
+    Shortcut {
+        sequences: ["+", "=", StandardKey.ZoomIn]
+        enabled: view.enabled
+        onActivated: zoom.zoomAt(1.5, 0, 0)
+    }
+    Shortcut {
+        sequences: ["-", StandardKey.ZoomOut]
+        enabled: view.enabled
+        onActivated: zoom.zoomAt(1 / 1.5, 0, 0)
+    }
+    Shortcut {
+        sequence: "0"
+        enabled: view.enabled
+        onActivated: zoom.reset()
+    }
+
     Shortcut {
         sequences: ["Right", "Space"]
         enabled: view.enabled
@@ -34,6 +56,7 @@ ColumnLayout {
         Layout.fillHeight: true
         source: Controller.currentUrl
         label: Controller.currentFile
+        zoomState: zoom
         decodeSize: Qt.size(Math.round(width * Screen.devicePixelRatio), Math.round(height * Screen.devicePixelRatio))
 
         Kirigami.Chip {
@@ -77,7 +100,7 @@ ColumnLayout {
             Layout.fillWidth: true
         }
         QQC2.Label {
-            text: Controller.viewingHistory ? i18nc("@info:usagetip", "→ back to current image   ← previous") : i18nc("@info:usagetip", "→ / Space: OK   ↓ / Del: reject   ← previous   Backspace: undo")
+            text: Controller.viewingHistory ? i18nc("@info:usagetip", "→ back to current image   ← previous") : i18nc("@info:usagetip", "→ / Space: OK   ↓ / Del: reject   ← previous   + − 0: zoom   Backspace: undo")
             opacity: 0.7
         }
     }

@@ -50,7 +50,8 @@ QImage ImageCache::decode(const QString &path, const QSize &size)
     if (reader.transformation() & QImageIOHandler::TransformationRotate90) {
         target.transpose();
     }
-    if (target.isValid() && size.isValid() && (target.width() > size.width() || target.height() > size.height())) {
+    // An empty size asks for the full resolution.
+    if (target.isValid() && !size.isEmpty() && (target.width() > size.width() || target.height() > size.height())) {
         target.scale(size, Qt::KeepAspectRatio);
         if (reader.transformation() & QImageIOHandler::TransformationRotate90) {
             target.transpose();
@@ -109,7 +110,7 @@ void ImageCache::prefetch(const QList<QUrl> &urls, const QSize &size)
 
 std::shared_ptr<ImageCache::Entry> ImageCache::largerEntry(const QString &path, const QSize &size) const
 {
-    if (!size.isValid()) {
+    if (size.isEmpty()) {
         return nullptr;
     }
     for (auto it = m_entries.cbegin(); it != m_entries.cend(); ++it) {

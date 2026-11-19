@@ -15,6 +15,29 @@ ColumnLayout {
 
     spacing: 0
 
+    // Both images zoom and pan together. A new pair starts unzoomed.
+    ZoomState {
+        id: zoom
+    }
+    readonly property string pair: Controller.leftFile + "\n" + Controller.rightFile
+    onPairChanged: zoom.reset()
+
+    Shortcut {
+        sequences: ["+", "=", StandardKey.ZoomIn]
+        enabled: view.enabled
+        onActivated: zoom.zoomAt(1.5, 0, 0)
+    }
+    Shortcut {
+        sequences: ["-", StandardKey.ZoomOut]
+        enabled: view.enabled
+        onActivated: zoom.zoomAt(1 / 1.5, 0, 0)
+    }
+    Shortcut {
+        sequence: "0"
+        enabled: view.enabled
+        onActivated: zoom.reset()
+    }
+
     Shortcut {
         sequence: "Left"
         enabled: view.enabled
@@ -59,6 +82,7 @@ ColumnLayout {
             source: Controller.leftUrl
             label: Controller.leftFile
             decodeSize: view.decodeSize
+            zoomState: zoom
         }
         ImagePane {
             Layout.fillWidth: true
@@ -67,6 +91,7 @@ ColumnLayout {
             source: Controller.rightUrl
             label: Controller.rightFile
             decodeSize: view.decodeSize
+            zoomState: zoom
         }
     }
 
@@ -134,7 +159,7 @@ ColumnLayout {
         }
 
         QQC2.Label {
-            text: i18nc("@info:usagetip", "← → choose   ↑ tie   1 / 2 reject   Backspace undo")
+            text: i18nc("@info:usagetip", "← → choose   ↑ tie   1 / 2 reject   + − 0 zoom   Backspace undo")
             opacity: 0.7
         }
     }
