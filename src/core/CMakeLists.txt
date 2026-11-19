@@ -10,6 +10,8 @@ add_library(seedpickcore STATIC
     imagescanner.h
     session.cpp
     session.h
+    sessionstore.cpp
+    sessionstore.h
     version.cpp
     version.h
 )
