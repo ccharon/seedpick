@@ -1,0 +1,539 @@
+# SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+# SPDX-License-Identifier: GPL-2.0-or-later
+#
+# German translation of Seedpick.
+msgid ""
+msgstr ""
+"Project-Id-Version: seedpick\n"
+"Report-Msgid-Bugs-To: https://github.com/ccharon/seedpick/issues\n"
+"POT-Creation-Date: 2026-11-19 15:57+0100\n"
+"PO-Revision-Date: 2026-11-19 15:57+0100\n"
+"Last-Translator: Christian Charon <ccharon@mailbox.org>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/app/main.cpp:53 src/app/qml/Main.qml:88
+#, kde-format
+msgctxt "@title"
+msgid "Seedpick"
+msgstr "Seedpick"
+
+#: src/app/main.cpp:55
+#, kde-format
+msgid "Pick the best images from a folder by pairwise comparison"
+msgstr "Die besten Bilder eines Ordners per Paarvergleich auswählen"
+
+#: src/app/main.cpp:57
+#, kde-format
+msgid "© 2026 Christian Charon"
+msgstr "© 2026 Christian Charon"
+
+#: src/app/main.cpp:58
+#, kde-format
+msgid "Christian Charon"
+msgstr "Christian Charon"
+
+#: src/app/main.cpp:66
+#, kde-format
+msgid "Image directory to open"
+msgstr "Zu öffnender Bildordner"
+
+#: src/app/settings.cpp:52
+#, kde-format
+msgid "Number of images to keep."
+msgstr "Anzahl der Bilder, die behalten werden."
+
+#: src/app/settings.cpp:52
+#, kde-format
+msgctxt "@info:shell value name"
+msgid "count"
+msgstr "Anzahl"
+
+#: src/app/settings.cpp:53
+#, kde-format
+msgid "Folder for the kept images. They stay in place by default."
+msgstr "Ordner für die behaltenen Bilder. Standardmäßig bleiben sie liegen."
+
+#: src/app/settings.cpp:53 src/app/settings.cpp:54 src/app/settings.cpp:55
+#, kde-format
+msgctxt "@info:shell value name"
+msgid "name"
+msgstr "Name"
+
+#: src/app/settings.cpp:54
+#, kde-format
+msgid "Folder for the remaining images."
+msgstr "Ordner für die übrigen Bilder."
+
+#: src/app/settings.cpp:55
+#, kde-format
+msgid "Folder for rejected images."
+msgstr "Ordner für aussortierte Bilder."
+
+#: src/app/settings.cpp:56
+#, kde-format
+msgid "Move rejected images to the trash."
+msgstr "Aussortierte Bilder in den Papierkorb verschieben."
+
+#: src/app/settings.cpp:57
+#, kde-format
+msgid "Start new sessions without screening."
+msgstr "Neue Sitzungen ohne Sichtung beginnen."
+
+#: src/app/settings.cpp:67
+#, kde-format
+msgid "--top expects a number between 1 and %1."
+msgstr "--top erwartet eine Zahl zwischen 1 und %1."
+
+#: src/app/settings.cpp:85
+#, kde-format
+msgid "--%1 expects a folder name without \"/\"."
+msgstr "--%1 erwartet einen Ordnernamen ohne \"/\"."
+
+#: src/app/qml/AppliedView.qml:23
+msgid "Cancelled after one of %2 files"
+msgid_plural "Cancelled after %1 of %2 files"
+msgstr[0] "Abgebrochen nach einer von %2 Dateien"
+msgstr[1] "Abgebrochen nach %1 von %2 Dateien"
+
+#: src/app/qml/AppliedView.qml:23
+msgid "Moved one file"
+msgid_plural "Moved %1 files"
+msgstr[0] "Eine Datei verschoben"
+msgstr[1] "%1 Dateien verschoben"
+
+#: src/app/qml/AppliedView.qml:24
+msgid ""
+"The moved files are listed in .seedpick-apply.log.jsonl. The session file "
+"stays. Resuming it ranks the remaining images again."
+msgstr "Die verschobenen Dateien stehen in .seedpick-apply.log.jsonl. Die Sitzungsdatei bleibt erhalten. Beim Fortsetzen werden die übrigen Bilder neu eingereiht."
+
+#: src/app/qml/AppliedView.qml:24
+msgid "One file could not be moved and stays in place."
+msgid_plural "%1 files could not be moved and stay in place."
+msgstr[0] "Eine Datei ließ sich nicht verschieben und bleibt liegen."
+msgstr[1] "%1 Dateien ließen sich nicht verschieben und bleiben liegen."
+
+#: src/app/qml/AppliedView.qml:24
+msgid "The session file was kept as %1."
+msgstr "Die Sitzungsdatei wurde als %1 aufbewahrt."
+
+#: src/app/qml/AppliedView.qml:24
+msgid "The session file was deleted."
+msgstr "Die Sitzungsdatei wurde gelöscht."
+
+#: src/app/qml/AppliedView.qml:59
+msgctxt "@action:button"
+msgid "Open Folder"
+msgstr "Ordner öffnen"
+
+#: src/app/qml/AppliedView.qml:64
+msgctxt "@action:button"
+msgid "Close"
+msgstr "Schließen"
+
+#: src/app/qml/DuelView.qml:124
+msgid "The selection is settled."
+msgstr "Die Auswahl steht fest."
+
+#: src/app/qml/DuelView.qml:124
+msgid "Good enough. Finish now?"
+msgstr "Gut genug. Jetzt beenden?"
+
+#: src/app/qml/DuelView.qml:128
+msgctxt "@action:button"
+msgid "Finish (Enter)"
+msgstr "Beenden (Eingabe)"
+
+#: src/app/qml/DuelView.qml:140
+msgctxt "@info:status"
+msgid "%1 comparisons"
+msgstr "%1 Vergleiche"
+
+#: src/app/qml/DuelView.qml:140
+msgctxt "@info:status"
+msgid "%2 comparisons, about one remaining"
+msgid_plural "%2 comparisons, about %1 remaining"
+msgstr[0] "%2 Vergleiche, noch etwa einer"
+msgstr[1] "%2 Vergleiche, noch etwa %1"
+
+#: src/app/qml/DuelView.qml:144
+msgctxt "@label"
+msgid "Top %1:"
+msgstr "Top %1:"
+
+#: src/app/qml/DuelView.qml:168
+msgctxt "@info:usagetip"
+msgid ""
+"← → choose   ↑ tie   1 / 2 reject   + − 0 zoom   I info   Backspace undo"
+msgstr "← → wählen   ↑ unentschieden   1 / 2 aussortieren   + − 0 Zoom   I Info   Rücktaste rückgängig"
+
+#: src/app/qml/ImagePane.qml:166
+msgctxt "@label negative prompt, %1 is the prompt"
+msgid "Negative: %1"
+msgstr "Negativ: %1"
+
+#: src/app/qml/ImagePane.qml:221
+msgctxt "@info:status zoom factor"
+msgid "×%1"
+msgstr "×%1"
+
+#: src/app/qml/Main.qml:12
+msgctxt "@title:window %1 is a folder path"
+msgid "%1 - Seedpick"
+msgstr "%1 – Seedpick"
+
+#: src/app/qml/Main.qml:12
+msgctxt "@title:window"
+msgid "Seedpick"
+msgstr "Seedpick"
+
+#: src/app/qml/Main.qml:80
+msgctxt "@title"
+msgid "Screening"
+msgstr "Sichtung"
+
+#: src/app/qml/Main.qml:82
+msgctxt "@title"
+msgid "Duels"
+msgstr "Duelle"
+
+#: src/app/qml/Main.qml:84
+msgctxt "@title"
+msgid "Result"
+msgstr "Ergebnis"
+
+#: src/app/qml/Main.qml:86
+msgctxt "@title"
+msgid "Done"
+msgstr "Fertig"
+
+#: src/app/qml/Main.qml:95
+msgctxt "@action:button"
+msgid "Undo"
+msgstr "Rückgängig"
+
+#: src/app/qml/Main.qml:101
+msgctxt "@action:button"
+msgid "Full Screen"
+msgstr "Vollbild"
+
+#: src/app/qml/Main.qml:107
+msgctxt "@action:button"
+msgid "Pause"
+msgstr "Pause"
+
+#: src/app/qml/Main.qml:114
+msgctxt "@action:button"
+msgid "Image Info"
+msgstr "Bildinfo"
+
+#: src/app/qml/Main.qml:123
+msgctxt "@action:button"
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: src/app/qml/ReconcileMessage.qml:21
+msgid "One image is missing and no longer counts."
+msgid_plural "%1 images are missing and no longer count."
+msgstr[0] "Ein Bild fehlt und zählt nicht mehr."
+msgstr[1] "%1 Bilder fehlen und zählen nicht mehr."
+
+#: src/app/qml/ReconcileMessage.qml:24
+msgid "One new image was added."
+msgid_plural "%1 new images were added."
+msgstr[0] "Ein neues Bild ist hinzugekommen."
+msgstr[1] "%1 neue Bilder sind hinzugekommen."
+
+#: src/app/qml/ReconcileMessage.qml:27
+msgid "One image changed since the last session: %2"
+msgid_plural "%1 images changed since the last session: %2"
+msgstr[0] "Ein Bild hat sich seit der letzten Sitzung geändert: %2"
+msgstr[1] "%1 Bilder haben sich seit der letzten Sitzung geändert: %2"
+
+#: src/app/qml/ScreeningView.qml:74
+msgctxt "@info"
+msgid "Already screened: reject"
+msgstr "Bereits gesichtet: aussortiert"
+
+#: src/app/qml/ScreeningView.qml:74
+msgctxt "@info"
+msgid "Already screened: OK"
+msgstr "Bereits gesichtet: OK"
+
+#: src/app/qml/ScreeningView.qml:99
+msgctxt "@info:status"
+msgid "Screened %1 of %2"
+msgstr "%1 von %2 gesichtet"
+
+#: src/app/qml/ScreeningView.qml:105
+msgctxt "@info:usagetip"
+msgid "→ back to current image   ← previous"
+msgstr "→ zurück zum aktuellen Bild   ← vorheriges"
+
+#: src/app/qml/ScreeningView.qml:105
+msgctxt "@info:usagetip"
+msgid ""
+"→ / Space: OK   ↓ / Del: reject   ← previous   + − 0: zoom   I: info   "
+"Backspace: undo"
+msgstr "→ / Leertaste: OK   ↓ / Entf: aussortieren   ← vorheriges   + − 0: Zoom   I: Info   Rücktaste: rückgängig"
+
+#: src/app/qml/SettingsPage.qml:14
+msgctxt "@title"
+msgid "Settings"
+msgstr "Einstellungen"
+
+#: src/app/qml/SettingsPage.qml:26
+msgctxt "@action:button"
+msgid "Defaults"
+msgstr "Standardwerte"
+
+#: src/app/qml/SettingsPage.qml:41
+msgid "Command line options override these settings for this run: %1"
+msgstr "Kommandozeilenoptionen überschreiben diese Einstellungen für diesen Lauf: %1"
+
+#: src/app/qml/SettingsPage.qml:49
+msgctxt "@title:group"
+msgid "New Sessions"
+msgstr "Neue Sitzungen"
+
+#: src/app/qml/SettingsPage.qml:52 src/app/qml/StartView.qml:101
+msgctxt "@label:spinbox"
+msgid "Images to keep:"
+msgstr "Zu behaltende Bilder:"
+
+#: src/app/qml/SettingsPage.qml:63 src/app/qml/StartView.qml:109
+msgctxt "@option:check"
+msgid "Skip screening"
+msgstr "Sichtung überspringen"
+
+#: src/app/qml/SettingsPage.qml:71
+msgctxt "@label:spinbox"
+msgid "Minimum duels per image:"
+msgstr "Mindestzahl Duelle pro Bild:"
+
+#: src/app/qml/SettingsPage.qml:83
+msgctxt "@title:group"
+msgid "Duels"
+msgstr "Duelle"
+
+#: src/app/qml/SettingsPage.qml:87
+msgctxt "@label:spinbox"
+msgid "Done below:"
+msgstr "Fertig unter:"
+
+#: src/app/qml/SettingsPage.qml:91
+msgctxt "@item:valuesuffix percentage"
+msgid "%1 %"
+msgstr "%1 %"
+
+#: src/app/qml/SettingsPage.qml:100
+msgid ""
+"Expected share of wrong picks in the selection. Lower values need more duels."
+msgstr "Erwarteter Anteil falsch gewählter Bilder in der Auswahl. Kleinere Werte brauchen mehr Duelle."
+
+#: src/app/qml/SettingsPage.qml:108
+msgctxt "@title:group"
+msgid "Apply"
+msgstr "Anwenden"
+
+#: src/app/qml/SettingsPage.qml:112
+msgctxt "@label:textbox"
+msgid "Folder for kept images:"
+msgstr "Ordner für behaltene Bilder:"
+
+#: src/app/qml/SettingsPage.qml:114
+msgctxt "@info:placeholder"
+msgid "Stay in place"
+msgstr "Bleiben liegen"
+
+#: src/app/qml/SettingsPage.qml:119
+msgctxt "@label:textbox"
+msgid "Folder for the rest:"
+msgstr "Ordner für den Rest:"
+
+#: src/app/qml/SettingsPage.qml:125
+msgctxt "@label:textbox"
+msgid "Folder for rejected images:"
+msgstr "Ordner für aussortierte Bilder:"
+
+#: src/app/qml/SettingsPage.qml:134
+msgid ""
+"A folder name must not contain \"/\" or start or end with a space. Only the "
+"folder for kept images may stay empty."
+msgstr "Ein Ordnername darf kein \"/\" enthalten und nicht mit einem Leerzeichen beginnen oder enden. Nur der Ordner für behaltene Bilder darf leer bleiben."
+
+#: src/app/qml/SettingsPage.qml:137
+msgctxt "@option:check"
+msgid "Move rejected images to the trash"
+msgstr "Aussortierte Bilder in den Papierkorb verschieben"
+
+#: src/app/qml/SettingsPage.qml:146
+msgctxt "@label:textbox"
+msgid "Sidecar file extensions:"
+msgstr "Endungen der Begleitdateien:"
+
+#: src/app/qml/SettingsPage.qml:154
+msgctxt "@option:check"
+msgid "Keep the session file after applying"
+msgstr "Sitzungsdatei nach dem Anwenden aufbewahren"
+
+#: src/app/qml/StartView.qml:31
+msgctxt "@title:window"
+msgid "Open Image Folder"
+msgstr "Bildordner öffnen"
+
+#: src/app/qml/StartView.qml:51
+msgid "Open a folder with similar images"
+msgstr "Einen Ordner mit ähnlichen Bildern öffnen"
+
+#: src/app/qml/StartView.qml:52
+msgid "Pick the best images by comparing them in pairs."
+msgstr "Die besten Bilder durch paarweisen Vergleich auswählen."
+
+#: src/app/qml/StartView.qml:55
+msgctxt "@action:button"
+msgid "Open Folder…"
+msgstr "Ordner öffnen …"
+
+#: src/app/qml/StartView.qml:67
+msgid "Continue the previous session?"
+msgstr "Die vorherige Sitzung fortsetzen?"
+
+#: src/app/qml/StartView.qml:72
+msgid "The folder contains a session with one decision."
+msgid_plural "The folder contains a session with %1 decisions."
+msgstr[0] "Der Ordner enthält eine Sitzung mit einer Entscheidung."
+msgstr[1] "Der Ordner enthält eine Sitzung mit %1 Entscheidungen."
+
+#: src/app/qml/StartView.qml:78
+msgctxt "@action:button"
+msgid "Continue"
+msgstr "Fortsetzen"
+
+#: src/app/qml/StartView.qml:83
+msgctxt "@action:button"
+msgid "Start New Session"
+msgstr "Neue Sitzung beginnen"
+
+#: src/app/qml/StartView.qml:94
+msgctxt "@label"
+msgid "Folder:"
+msgstr "Ordner:"
+
+#: src/app/qml/StartView.qml:114
+msgid "The previous session file is kept as a backup."
+msgstr "Die bisherige Sitzungsdatei bleibt als Sicherung erhalten."
+
+#: src/app/qml/StartView.qml:119
+msgctxt "@action:button"
+msgid "Start"
+msgstr "Beginnen"
+
+#: src/app/qml/SummaryColumn.qml:101
+msgctxt "@info:tooltip"
+msgid "Moved by hand"
+msgstr "Von Hand verschoben"
+
+#: src/app/qml/SummaryColumn.qml:146
+msgctxt "@action:inmenu"
+msgid "Move to Keep"
+msgstr "Zu „Behalten“ verschieben"
+
+#: src/app/qml/SummaryColumn.qml:152
+msgctxt "@action:inmenu"
+msgid "Move to Rest"
+msgstr "Zu „Rest“ verschieben"
+
+#: src/app/qml/SummaryColumn.qml:158
+msgctxt "@action:inmenu"
+msgid "Move to Reject"
+msgstr "Zu „Aussortiert“ verschieben"
+
+#: src/app/qml/SummaryView.qml:83
+msgctxt "@title result column"
+msgid "Keep"
+msgstr "Behalten"
+
+#: src/app/qml/SummaryView.qml:84
+msgctxt "@info result folder"
+msgid "stay in place"
+msgstr "bleiben liegen"
+
+#: src/app/qml/SummaryView.qml:94
+msgctxt "@title result column"
+msgid "Rest"
+msgstr "Rest"
+
+#: src/app/qml/SummaryView.qml:105
+msgctxt "@title result column"
+msgid "Reject"
+msgstr "Aussortiert"
+
+#: src/app/qml/SummaryView.qml:106 src/app/qml/SummaryView.qml:163
+msgctxt "@info result folder"
+msgid "Trash"
+msgstr "Papierkorb"
+
+#: src/app/qml/SummaryView.qml:119
+msgctxt "@info:usagetip"
+msgid ""
+"Drag images to another column or right-click them. Nothing is moved before "
+"Apply."
+msgstr "Bilder in eine andere Spalte ziehen oder rechts anklicken. Vor „Anwenden“ wird nichts verschoben."
+
+#: src/app/qml/SummaryView.qml:133
+msgctxt "@action:button"
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/app/qml/SummaryView.qml:139
+msgctxt "@action:button"
+msgid "Apply…"
+msgstr "Anwenden …"
+
+#: src/app/qml/SummaryView.qml:160
+msgctxt "@title:dialog"
+msgid "Apply the Result?"
+msgstr "Ergebnis anwenden?"
+
+#: src/app/qml/SummaryView.qml:161
+msgctxt "@info"
+msgid "Keep: one image → %2"
+msgid_plural "Keep: %1 images → %2"
+msgstr[0] "Behalten: ein Bild → %2"
+msgstr[1] "Behalten: %1 Bilder → %2"
+
+#: src/app/qml/SummaryView.qml:161
+msgctxt "@info"
+msgid "Keep: one image stays in place"
+msgid_plural "Keep: %1 images stay in place"
+msgstr[0] "Behalten: ein Bild bleibt liegen"
+msgstr[1] "Behalten: %1 Bilder bleiben liegen"
+
+#: src/app/qml/SummaryView.qml:162
+msgctxt "@info"
+msgid "Rest: one image → %2"
+msgid_plural "Rest: %1 images → %2"
+msgstr[0] "Rest: ein Bild → %2"
+msgstr[1] "Rest: %1 Bilder → %2"
+
+#: src/app/qml/SummaryView.qml:163
+msgctxt "@info"
+msgid "Reject: one image → %2"
+msgid_plural "Reject: %1 images → %2"
+msgstr[0] "Aussortiert: ein Bild → %2"
+msgstr[1] "Aussortiert: %1 Bilder → %2"
+
+#: src/app/qml/SummaryView.qml:165
+msgid "Sidecar files move along. Existing files are never overwritten."
+msgstr "Begleitdateien werden mitverschoben. Vorhandene Dateien werden nie überschrieben."
+
+#: src/app/qml/SummaryView.qml:170
+msgctxt "@action:button"
+msgid "Move Files"
+msgstr "Dateien verschieben"

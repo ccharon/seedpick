@@ -14,7 +14,14 @@ SPDX-License-Identifier: CC0-1.0
     <p>
       Seedpick shows two images side by side and asks which one is better.
       A Bradley-Terry model picks the next pair so that only a few comparisons are needed
-      to find the top n images. The result is moved into separate folders.
+      to find the top n images. The selected images stay in the folder, the others move
+      into subfolders.
+    </p>
+    <p xml:lang="de">
+      Seedpick zeigt zwei Bilder nebeneinander und fragt, welches besser ist.
+      Ein Bradley-Terry-Modell wählt das nächste Paar so, dass wenige Vergleiche reichen,
+      um die besten n Bilder zu finden. Die ausgewählten Bilder bleiben im Ordner, die
+      übrigen wandern in Unterordner.
     </p>
   </description>
   <developer id="io.github.ccharon">

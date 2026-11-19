@@ -61,6 +61,8 @@ endif()
 
 if(BUILD_APP)
     add_subdirectory(data)
+    # Translations from po/<lang>/seedpick.po, updated with po/extract.sh.
+    ki18n_install(po)
 endif()
 
 file(GLOB_RECURSE ALL_CLANG_FORMAT_SOURCE_FILES CONFIGURE_DEPENDS
