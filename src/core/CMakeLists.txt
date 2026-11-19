@@ -12,6 +12,8 @@ add_library(seedpickcore STATIC
     event.h
     filemover.cpp
     filemover.h
+    imagemetadata.cpp
+    imagemetadata.h
     imagescanner.cpp
     imagescanner.h
     pairscheduler.cpp
