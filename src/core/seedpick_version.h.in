@@ -1,0 +1,9 @@
+// SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#pragma once
+
+#define SEEDPICK_VERSION_STRING "@SEEDPICK_VERSION_STRING@"
+#define SEEDPICK_PROJECT_VERSION "@PROJECT_VERSION@"
+#define SEEDPICK_APP_ID "@SEEDPICK_APP_ID@"
+#define SEEDPICK_DISPLAY_NAME "@SEEDPICK_DISPLAY_NAME@"

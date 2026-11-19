@@ -1,0 +1,14 @@
+# SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+# SPDX-License-Identifier: CC0-1.0
+
+version = 1
+
+[[annotations]]
+path = ["CMakePresets.json"]
+SPDX-FileCopyrightText = "2026 Christian Charon <ccharon@mailbox.org>"
+SPDX-License-Identifier = "CC0-1.0"
+
+[[annotations]]
+path = ["KONZEPT.md", "LANGSTYLE.md"]
+SPDX-FileCopyrightText = "2026 Christian Charon <ccharon@mailbox.org>"
+SPDX-License-Identifier = "CC0-1.0"
