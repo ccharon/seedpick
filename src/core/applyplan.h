@@ -19,7 +19,8 @@ class ApplyLog;
 class FileMover;
 
 struct ResultFolders {
-    QString keep = QStringLiteral("_keep");
+    // Empty: kept images stay where they are.
+    QString keep;
     QString rest = QStringLiteral("_rest");
     QString reject = QStringLiteral("_reject");
 
@@ -55,7 +56,8 @@ struct ApplyPlan {
     qsizetype fileCount() const;
 };
 
-// Plans moving every image and its sidecars into the folder of its role. `roles` is indexed like
+// Plans moving every image and its sidecars into the folder of its role. Images whose role has
+// no folder (Keep with an empty name) stay in place together with their sidecars. `roles` is indexed like
 // `images`. A name already taken in the target folder, on disk or earlier in the plan, gets "-1",
 // "-2", … before the extension. The image and its sidecars always get the same suffix.
 // With `rejectToTrash`, rejected images and their sidecars go to the trash instead.

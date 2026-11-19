@@ -111,6 +111,9 @@ ApplyPlan buildApplyPlan(const QString &directory,
             continue;
         }
         const QString folder = folders.name(roles.at(i));
+        if (folder.isEmpty()) {
+            continue;
+        }
         if (!taken.contains(folder)) {
             taken.insert(folder, existingNames(dir.filePath(folder)));
         }

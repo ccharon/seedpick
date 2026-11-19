@@ -72,6 +72,18 @@ private Q_SLOTS:
         QCOMPARE(effective.minDuels, 3);
     }
 
+    void emptyKeepFolderIsAllowed()
+    {
+        QString error;
+        const auto overrides = parse({u"--keep-dir="_s}, &error);
+        QVERIFY2(overrides, qPrintable(error));
+        Settings stored;
+        stored.folders.keep = u"_keep"_s;
+        QVERIFY(applyOverrides(stored, *overrides).folders.keep.isEmpty());
+        QCOMPARE(sanitized(stored).folders.keep, u"_keep"_s);
+        QVERIFY(Settings{}.folders.keep.isEmpty());
+    }
+
     void flagsDoNotSwitchStoredValuesOff()
     {
         Settings stored;
@@ -126,14 +138,14 @@ private Q_SLOTS:
     void sanitizedRepairsStoredValues()
     {
         Settings stored;
-        stored.folders = {u""_s, u"../up"_s, u"_ausschuss"_s};
+        stored.folders = {u"a/b"_s, u"../up"_s, u"_ausschuss"_s};
         stored.topN = 0;
         stored.minDuels = 50;
         stored.confidenceThreshold = 2;
         stored.sidecarExtensions = {u" txt "_s, u""_s, u"TXT"_s, u"tar.gz"_s, u"json"_s};
 
         const Settings fixed = sanitized(stored);
-        QCOMPARE(fixed.folders.keep, u"_keep"_s);
+        QVERIFY(fixed.folders.keep.isEmpty());
         QCOMPARE(fixed.folders.rest, u"_rest"_s);
         QCOMPARE(fixed.folders.reject, u"_ausschuss"_s);
         QCOMPARE(fixed.topN, 1);

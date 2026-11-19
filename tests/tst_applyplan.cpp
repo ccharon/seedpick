@@ -87,6 +87,7 @@ private:
 };
 
 const QStringList noSidecars;
+const ResultFolders withKeepFolder{u"_keep"_s, u"_rest"_s, u"_reject"_s};
 
 class EnvironmentOverride
 {
@@ -152,7 +153,7 @@ private Q_SLOTS:
         const ApplyPlan plan = buildApplyPlan(dir.path(),
                                               {u"a.png"_s, u"b.png"_s, u"c.png"_s},
                                               {Role::Keep, Role::Rest, Role::Reject},
-                                              ResultFolders{},
+                                              withKeepFolder,
                                               defaultSidecarExtensions());
         QCOMPARE(plan.items.size(), 3);
         QCOMPARE(plan.items.at(0).moves,
@@ -162,6 +163,23 @@ private Q_SLOTS:
         QCOMPARE(plan.fileCount(), 5);
         // Planning does not touch the directory.
         QCOMPARE(QDir(dir.path()).entryList(QDir::Dirs | QDir::NoDotAndDotDot), QStringList{});
+    }
+
+    void keptImagesStayByDefault()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s, u"b.txt"_s});
+
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Keep, Role::Rest}, ResultFolders{}, defaultSidecarExtensions());
+        QCOMPARE(plan.items.size(), 1);
+        QCOMPARE(plan.items.at(0).moves, (QList<FileMove>{{u"b.png"_s, u"_rest/b.png"_s}, {u"b.txt"_s, u"_rest/b.txt"_s}}));
+
+        LocalFileMover mover;
+        ApplyLog log(dir.path());
+        QVERIFY(executeApplyPlan(dir.path(), plan, mover, log).succeeded());
+        QCOMPARE(QDir(dir.path()).entryList(QDir::Files), (QStringList{u"a.png"_s, u"a.txt"_s}));
+        QVERIFY(!QFileInfo::exists(dir.filePath(u"_keep"_s)));
     }
 
     void customFolderNames()
@@ -180,7 +198,7 @@ private Q_SLOTS:
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"a.png.json"_s, u"_keep/a.png"_s});
 
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, ResultFolders{}, defaultSidecarExtensions());
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, defaultSidecarExtensions());
         QCOMPARE(plan.items.at(0).moves,
                  (QList<FileMove>{{u"a.png"_s, u"_keep/a-1.png"_s}, {u"a.png.json"_s, u"_keep/a-1.png.json"_s}, {u"a.txt"_s, u"_keep/a-1.txt"_s}}));
     }
@@ -192,7 +210,7 @@ private Q_SLOTS:
         // Only the caption name is taken, and so is the first suffix.
         createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"_keep/a.txt"_s, u"_keep/a-1.png"_s});
 
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, ResultFolders{}, defaultSidecarExtensions());
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, defaultSidecarExtensions());
         QCOMPARE(plan.items.at(0).moves, (QList<FileMove>{{u"a.png"_s, u"_keep/a-2.png"_s}, {u"a.txt"_s, u"_keep/a-2.txt"_s}}));
     }
 
@@ -202,7 +220,7 @@ private Q_SLOTS:
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s, u"a-1.png"_s, u"_rest/a.png"_s});
 
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"a-1.png"_s}, {Role::Rest, Role::Rest}, ResultFolders{}, noSidecars);
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"a-1.png"_s}, {Role::Rest, Role::Rest}, withKeepFolder, noSidecars);
         QCOMPARE(allMoves(plan), (QList<FileMove>{{u"a.png"_s, u"_rest/a-1.png"_s}, {u"a-1.png"_s, u"_rest/a-1-1.png"_s}}));
     }
 
@@ -211,7 +229,7 @@ private Q_SLOTS:
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s, u"_rest/a.png"_s});
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, ResultFolders{}, noSidecars);
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, noSidecars);
         QCOMPARE(plan.items.at(0).moves.at(0).target, u"_keep/a.png"_s);
     }
 
@@ -220,7 +238,7 @@ private Q_SLOTS:
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s, u"_keep/a.png"_s});
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Keep, Role::Rest}, ResultFolders{}, defaultSidecarExtensions());
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Keep, Role::Rest}, withKeepFolder, defaultSidecarExtensions());
 
         LocalFileMover mover;
         ApplyLog log(dir.path());
@@ -261,7 +279,7 @@ private Q_SLOTS:
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s});
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Keep, Role::Keep}, ResultFolders{}, defaultSidecarExtensions());
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Keep, Role::Keep}, withKeepFolder, defaultSidecarExtensions());
 
         FailingMover mover({u"a.png"_s});
         ApplyLog log(dir.path());
@@ -290,7 +308,7 @@ private Q_SLOTS:
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s});
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, ResultFolders{}, noSidecars);
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, noSidecars);
         writeFile(dir.filePath(u"_keep/a.png"_s), "newcomer");
 
         LocalFileMover mover;
@@ -310,7 +328,7 @@ private Q_SLOTS:
         ApplyLog log(dir.path());
         for (const QString &file : {u"a.png"_s, u"b.png"_s}) {
             createFiles(dir, {file});
-            const ApplyPlan plan = buildApplyPlan(dir.path(), {file}, {Role::Keep}, ResultFolders{}, noSidecars);
+            const ApplyPlan plan = buildApplyPlan(dir.path(), {file}, {Role::Keep}, withKeepFolder, noSidecars);
             QVERIFY(executeApplyPlan(dir.path(), plan, mover, log).succeeded());
         }
         const QJsonArray applies = readJson(log.path()).value("applies"_L1).toArray();
@@ -325,7 +343,7 @@ private Q_SLOTS:
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s});
         writeFile(dir.filePath(ApplyLog::fileName()), "{ broken");
-        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, ResultFolders{}, noSidecars);
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, noSidecars);
 
         LocalFileMover mover;
         ApplyLog log(dir.path());
@@ -347,7 +365,7 @@ private Q_SLOTS:
         createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s});
 
         const ApplyPlan plan =
-            buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Reject, Role::Keep}, ResultFolders{}, defaultSidecarExtensions(), true);
+            buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s}, {Role::Reject, Role::Keep}, withKeepFolder, defaultSidecarExtensions(), true);
         QVERIFY(plan.items.at(0).toTrash);
         QCOMPARE(plan.items.at(0).moves, (QList<FileMove>{{u"a.png"_s, {}}, {u"a.txt"_s, {}}}));
         QVERIFY(!plan.items.at(1).toTrash);

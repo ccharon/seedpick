@@ -7,7 +7,7 @@ SPDX-License-Identifier: CC0-1.0
 
 KDE image viewer for picking the n best images from a folder by pairwise comparison.
 Two images are shown side by side and the arrow keys choose the better one.
-A Bradley-Terry model selects the next pair. The result is moved into `_keep`, `_rest` and `_reject`.
+A Bradley-Terry model selects the next pair. The selected images stay in the folder, the others move into `_rest` and `_reject`.
 
 The design is described in [KONZEPT.md](KONZEPT.md) (German). Simulation results are in [docs/simulation.md](docs/simulation.md).
 
@@ -44,7 +44,7 @@ seedpick [options] [directory]
 | Option | Effect for this run |
 |---|---|
 | `-n, --top <count>` | Number of images to keep |
-| `--keep-dir <name>` | Folder for the kept images (default `_keep`) |
+| `--keep-dir <name>` | Folder for the kept images (default: they stay in place) |
 | `--rest-dir <name>` | Folder for the remaining images (default `_rest`) |
 | `--reject-dir <name>` | Folder for rejected images (default `_reject`) |
 | `--reject-to-trash` | Move rejected images to the trash |

@@ -49,6 +49,7 @@ Settings applyOverrides(Settings settings, const CommandLineOverrides &overrides
 // A folder name directly inside the image directory: not empty, no path separator, not "." or "..".
 bool isValidFolderName(const QString &name);
 
-// Replaces invalid folder names with the defaults, clamps numbers and drops empty or dotted
+// Replaces invalid folder names with the defaults (an empty keep folder is valid and keeps the
+// images in place), clamps numbers and drops empty or dotted
 // sidecar extensions.
 Settings sanitized(Settings settings);

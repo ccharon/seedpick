@@ -3,6 +3,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -257,18 +258,19 @@ private Q_SLOTS:
         QVERIFY(!controller.canUndo());
         QTRY_COMPARE(controller.state(), Controller::State::Applied);
         QVERIFY(!controller.applying());
-        QCOMPARE(controller.movedCount(), 6);
+        QCOMPARE(controller.movedCount(), 4);
         QCOMPARE(controller.applyErrors(), QStringList{});
-        QCOMPARE(controller.applyDone(), 6);
+        QCOMPARE(controller.applyDone(), 4);
 
         const QDir result(dir.path());
         QVERIFY(QFile::exists(result.filePath(u"_reject/"_s + rejected)));
         QVERIFY(QFile::exists(result.filePath(u"_reject/"_s + caption)));
-        for (const QString &file : keep) {
-            QVERIFY(QFile::exists(result.filePath(u"_keep/"_s + file)));
-        }
         QCOMPARE(QDir(result.filePath(u"_rest"_s)).entryList(QDir::Files).size(), 2);
-        QCOMPARE(result.entryList(QDir::Files), QStringList{});
+        // Kept images stay in the folder by default.
+        QStringList expectedKeep = keep;
+        expectedKeep.sort();
+        QCOMPARE(result.entryList(QDir::Files), expectedKeep);
+        QVERIFY(!QFileInfo::exists(result.filePath(u"_keep"_s)));
         QVERIFY(!Seedpick::SessionStore(dir.path()).exists());
         QCOMPARE(controller.archivedSession(), u".seedpick-session.done.json"_s);
         QVERIFY(QFile::exists(result.filePath(controller.archivedSession())));

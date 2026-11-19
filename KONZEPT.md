@@ -138,9 +138,11 @@ Datei `.seedpick-session.json` im Arbeitsverzeichnis, versioniertes Schema:
 ### Ergebnisordner (Standard, konfigurierbar)
 | Rolle | Standardname | Inhalt |
 |---|---|---|
-| keep | `_keep` | Top n |
+| keep | leer (bleibt liegen) | Top n |
 | rest | `_rest` | in Duellen unterlegen |
 | reject | `_reject` | in Sichtung/Duell als fehlerhaft markiert |
+
+Die ausgewählten Bilder bleiben standardmäßig mit ihren Begleitdateien im Ordner liegen, nur Rest und Ausschuss werden verschoben. Danach enthält der Ordner genau die Auswahl, und ein weiterer Durchgang kann direkt darauf aufsetzen. Wer die Auswahl lieber in einem eigenen Ordner hat, setzt `KeepDirName` (z. B. `_keep`).
 
 Der Unterstrich sorgt dafür, dass die Ordner in Dateimanagern oben stehen und als programmgeneriert erkennbar sind. Die Defaults sind englisch, weil das Repo öffentlich ist, und lassen sich frei umbenennen (z. B. `_auswahl/_rest/_ausschuss`).
 
@@ -154,7 +156,7 @@ Option `rejectToTrash`: Ausschuss in den Papierkorb (freedesktop Trash) statt in
 - Ein **Apply-Log** `.seedpick-apply.log.json` (Quelle → Ziel) ermöglicht `seedpick --undo-apply <dir>`. Das ist für einen späteren Meilenstein, aber das Log wird von Anfang an geschrieben. Jedes Anwenden hängt einen Eintrag an, frühere bleiben erhalten. Nach jeder Datei wird das Log atomar neu geschrieben:
   ```json
   { "schema": 1, "applies": [ { "startedAt": "…", "finishedAt": "…",
-      "moves":  [ { "source": "img.png", "target": "_keep/img.png", "at": "…" } ],
+      "moves":  [ { "source": "img.png", "target": "_rest/img.png", "at": "…" } ],
       "errors": [ { "source": "…", "target": "…", "error": "…", "at": "…" } ] } ] }
   ```
   Ist ein vorhandenes Log unlesbar oder lässt es sich nicht schreiben, wird nichts verschoben und die Sitzung bleibt bestehen.
@@ -175,7 +177,7 @@ KConfigXT (`seedpick.kcfg` + `.kcfgc`), Einstellungsdialog in Kirigami. Alle Wer
 | Schlüssel | Typ | Default | CLI |
 |---|---|---|---|
 | `TopN` | int | 5 | `-n, --top` |
-| `KeepDirName` | string | `_keep` | `--keep-dir` |
+| `KeepDirName` | string | leer | `--keep-dir` |
 | `RestDirName` | string | `_rest` | `--rest-dir` |
 | `RejectDirName` | string | `_reject` | `--reject-dir` |
 | `RejectToTrash` | bool | false | `--reject-to-trash` |

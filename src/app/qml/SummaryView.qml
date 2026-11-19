@@ -81,7 +81,7 @@ Item {
                 board: view
                 role: Controller.Keep
                 title: i18nc("@title result column", "Keep")
-                folder: Controller.keepFolder
+                folder: Controller.keepFolder.length > 0 ? Controller.keepFolder : i18nc("@info result folder", "stay in place")
                 items: Controller.keepItems
             }
             SummaryColumn {
@@ -152,7 +152,7 @@ Item {
     Kirigami.PromptDialog {
         id: confirmDialog
         title: i18nc("@title:dialog", "Apply the Result?")
-        subtitle: [i18ncp("@info", "Keep: one image → %2", "Keep: %1 images → %2", Controller.keepItems.length, Controller.keepFolder),
+        subtitle: [Controller.keepFolder.length > 0 ? i18ncp("@info", "Keep: one image → %2", "Keep: %1 images → %2", Controller.keepItems.length, Controller.keepFolder) : i18ncp("@info", "Keep: one image stays in place", "Keep: %1 images stay in place", Controller.keepItems.length),
                    i18ncp("@info", "Rest: one image → %2", "Rest: %1 images → %2", Controller.restItems.length, Controller.restFolder),
                    i18ncp("@info", "Reject: one image → %2", "Reject: %1 images → %2", Controller.rejectItems.length, Controller.rejectToTrash ? i18nc("@info result folder", "Trash") : Controller.rejectFolder),
                    "",

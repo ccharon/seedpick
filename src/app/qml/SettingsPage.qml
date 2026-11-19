@@ -13,8 +13,8 @@ Kirigami.ScrollablePage {
 
     title: i18nc("@title", "Settings")
 
-    function saveFolder(field, setter) {
-        if (Controller.isValidFolderName(field.text)) {
+    function saveFolder(field, setter, allowEmpty) {
+        if ((allowEmpty && field.text.length === 0) || Controller.isValidFolderName(field.text)) {
             setter(field.text);
             Config.save();
         }
@@ -111,7 +111,8 @@ Kirigami.ScrollablePage {
                 id: keepField
                 Kirigami.FormData.label: i18nc("@label:textbox", "Folder for kept images:")
                 text: Config.keepDirName
-                onEditingFinished: page.saveFolder(keepField, name => Config.keepDirName = name)
+                placeholderText: i18nc("@info:placeholder", "Stay in place")
+                onEditingFinished: page.saveFolder(keepField, name => Config.keepDirName = name, true)
             }
             QQC2.TextField {
                 id: restField
@@ -129,8 +130,8 @@ Kirigami.ScrollablePage {
             Kirigami.InlineMessage {
                 Layout.fillWidth: true
                 type: Kirigami.MessageType.Error
-                visible: !Controller.isValidFolderName(keepField.text) || !Controller.isValidFolderName(restField.text) || !Controller.isValidFolderName(rejectField.text)
-                text: i18n("A folder name must not be empty, contain \"/\" or start or end with a space.")
+                visible: (keepField.text.length > 0 && !Controller.isValidFolderName(keepField.text)) || !Controller.isValidFolderName(restField.text) || !Controller.isValidFolderName(rejectField.text)
+                text: i18n("A folder name must not contain \"/\" or start or end with a space. Only the folder for kept images may stay empty.")
             }
             QQC2.CheckBox {
                 text: i18nc("@option:check", "Move rejected images to the trash")

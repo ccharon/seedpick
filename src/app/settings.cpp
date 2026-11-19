@@ -50,7 +50,7 @@ QStringList CommandLineOverrides::options() const
 void addCommandLineOptions(QCommandLineParser &parser)
 {
     parser.addOption({{u"n"_s, topOption}, i18n("Number of images to keep."), i18nc("@info:shell value name", "count")});
-    parser.addOption({keepDirOption, i18n("Folder for the kept images."), i18nc("@info:shell value name", "name")});
+    parser.addOption({keepDirOption, i18n("Folder for the kept images. They stay in place by default."), i18nc("@info:shell value name", "name")});
     parser.addOption({restDirOption, i18n("Folder for the remaining images."), i18nc("@info:shell value name", "name")});
     parser.addOption({rejectDirOption, i18n("Folder for rejected images."), i18nc("@info:shell value name", "name")});
     parser.addOption({rejectToTrashOption, i18n("Move rejected images to the trash.")});
@@ -79,7 +79,9 @@ std::optional<CommandLineOverrides> commandLineOverrides(const QCommandLineParse
             continue;
         }
         const QString name = parser.value(option);
-        if (!isValidFolderName(name)) {
+        // An empty keep folder leaves the kept images in place.
+        const bool allowEmpty = &target == &overrides.keepDir;
+        if (!(allowEmpty && name.isEmpty()) && !isValidFolderName(name)) {
             *error = i18n("--%1 expects a folder name without \"/\".", option);
             return std::nullopt;
         }
@@ -117,7 +119,10 @@ bool isValidFolderName(const QString &name)
 Settings sanitized(Settings settings)
 {
     const Settings defaults;
-    for (auto member : {&Seedpick::ResultFolders::keep, &Seedpick::ResultFolders::rest, &Seedpick::ResultFolders::reject}) {
+    if (!settings.folders.keep.isEmpty() && !isValidFolderName(settings.folders.keep)) {
+        settings.folders.keep = defaults.folders.keep;
+    }
+    for (auto member : {&Seedpick::ResultFolders::rest, &Seedpick::ResultFolders::reject}) {
         if (!isValidFolderName(settings.folders.*member)) {
             settings.folders.*member = defaults.folders.*member;
         }
