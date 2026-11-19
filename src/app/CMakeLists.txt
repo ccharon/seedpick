@@ -8,6 +8,7 @@ add_executable(seedpick
     imagecache.cpp
     imagecache.h
     imageurl.h
+    asanoptions.cpp
 )
 
 ecm_add_qml_module(seedpick URI io.github.ccharon.seedpick GENERATE_PLUGIN_SOURCE)
