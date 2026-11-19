@@ -264,12 +264,18 @@ Version: einzige Quelle ist `project(seedpick VERSION x.y.z)`. Sie wird über `K
 - SemVer, Git-Tags `vX.Y.Z`. `main` ist immer baubar.
 - `CHANGELOG.md` (Keep a Changelog).
 - Release-Ablauf (Skript `packaging/release.sh`): Version in CMake setzen → Changelog → Commit → Tag → Push. Die CI erledigt den Rest.
+  Umsetzung (M6): `packaging/release.sh X.Y.Z [--push]` prüft sauberen Baum, Branch `main`, freien Tag und einen nicht leeren `[Unreleased]`-Abschnitt. Es setzt die Version, legt den Changelog-Abschnitt und den `<release>`-Eintrag in der Metainfo an, erzeugt das versionierte Ebuild, committet und taggt. Gepusht wird nur mit `--push`.
 
 ### Gentoo
 - `packaging/gentoo/media-gfx/seedpick/seedpick-9999.ebuild`: EAPI 8, `inherit ecm git-r3`, baut `main`.
 - Versionierte Ebuilds `seedpick-X.Y.Z.ebuild` erzeugt das Release-Skript aus einer Vorlage. Sie nutzen `SRC_URI` auf das Tag-Archiv (`…/archive/refs/tags/vX.Y.Z.tar.gz -> ${P}.tar.gz`).
 - Das Verzeichnis `packaging/gentoo` ist als lokales Overlay einbindbar (`metadata/layout.conf` + `profiles/repo_name`) oder wird später in ein eigenes Overlay-Repo gespiegelt.
 - Tests im Ebuild über `IUSE="test"` und `ecm_src_test`.
+- Umsetzung (M6):
+  - Die Ebuilds entstehen aus `packaging/templates/seedpick.ebuild.in` über `packaging/make-ebuild.sh 9999|X.Y.Z`. Versionierte Ebuilds bekommen `KEYWORDS="~amd64"`, das 9999-Ebuild keine.
+  - `KFMIN=6.8.0` und `QTMIN=6.6.0` entsprechen den Mindestversionen aus CMake. Laufzeit: `kimageformats`, `qqc2-desktop-style`.
+  - `sudo packaging/install-local-overlay.sh [repo]` kopiert `media-gfx/seedpick` in ein lokales Repo (Standard `/var/db/repos/local`), setzt root als Besitzer und Leserechte für alle anderen und erzeugt das Manifest für versionierte Ebuilds.
+  - Vor dem ersten Push lässt sich das 9999-Ebuild mit `EGIT_OVERRIDE_REPO_CCHARON_SEEDPICK=file:///pfad/zum/repo` gegen den lokalen Klon bauen.
 
 ### AppImage
 - Gebaut in der CI bei jedem Tag (Release-Asset) und optional nightly von `main` („continuous“-Release).

@@ -22,6 +22,7 @@ The project uses [Semantic Versioning](https://semver.org/).
 - Ctrl+Q quits.
 - Settings page and `seedpickrc` configuration for all options, command line options for a single run.
 - Rejected images can go to the trash instead of a folder.
+- Gentoo: live ebuild, ebuild template, local overlay installer and release script.
 
 ### Fixed
 

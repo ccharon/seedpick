@@ -52,6 +52,21 @@ seedpick [options] [directory]
 
 The settings page (gear icon) stores the defaults in `~/.config/seedpickrc`. Command line options are never stored.
 
+## Gentoo
+
+The ebuilds live in `packaging/gentoo`, which also works as an overlay on its own.
+
+```sh
+sudo packaging/install-local-overlay.sh            # copies media-gfx/seedpick to /var/db/repos/local
+echo '=media-gfx/seedpick-9999 **' | sudo tee /etc/portage/package.accept_keywords/seedpick
+sudo emerge -av media-gfx/seedpick
+```
+
+Until the repository is on GitHub, build the live ebuild from the local clone:
+`sudo EGIT_OVERRIDE_REPO_CCHARON_SEEDPICK=file://$PWD emerge -av media-gfx/seedpick`.
+
+Releases: `packaging/release.sh X.Y.Z [--push]` sets the version, updates the changelog and the AppStream release list, writes the versioned ebuild, commits and tags.
+
 ## Development
 
 Formatting uses the KDE clang-format style. `ninja -C build/dev clang-format` formats all sources.
