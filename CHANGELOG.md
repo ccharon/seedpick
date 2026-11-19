@@ -17,3 +17,10 @@ The project uses [Semantic Versioning](https://semver.org/).
 - Core: image scanner, session events, session state with undo, session file storage.
 - Core: Bradley-Terry model, pair scheduler and simulation harness.
 - GUI: screening and duels with keyboard control, session resume, image prefetching.
+- Result page with three columns, drag and drop and context menu corrections.
+- Apply: moves images and sidecar files into `_keep`, `_rest` and `_reject` without overwriting, writes `.seedpick-apply.log.json` and archives the session file.
+- Ctrl+Q quits.
+
+### Fixed
+
+- Space on the setup page no longer resumes a session that does not exist.
