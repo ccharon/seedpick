@@ -12,10 +12,32 @@
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 
+#include <cstdio>
+
 #include "controller.h"
 #include "imagecache.h"
 #include "imageurl.h"
 #include "seedpick_version.h"
+#include "settings.h"
+// Generated from seedpick.kcfg, declares Config.
+#include "seedpick.h"
+
+namespace
+{
+Settings storedSettings(const Config &config)
+{
+    Settings settings;
+    settings.topN = config.topN();
+    settings.skipScreening = config.skipScreening();
+    settings.minDuels = config.minDuels();
+    settings.confidenceThreshold = config.confidenceThreshold();
+    settings.folders = {config.keepDirName(), config.restDirName(), config.rejectDirName()};
+    settings.rejectToTrash = config.rejectToTrash();
+    settings.sidecarExtensions = config.sidecarExtensions();
+    settings.keepSessionAfterApply = config.keepSessionAfterApply();
+    return sanitized(settings);
+}
+}
 
 int main(int argc, char *argv[])
 {
@@ -42,9 +64,16 @@ int main(int argc, char *argv[])
 
     QCommandLineParser parser;
     parser.addPositionalArgument(QStringLiteral("directory"), i18n("Image directory to open"), QStringLiteral("[directory]"));
+    addCommandLineOptions(parser);
     about.setupCommandLine(&parser);
     parser.process(app);
     about.processCommandLine(&parser);
+    QString optionError;
+    const std::optional<CommandLineOverrides> overrides = commandLineOverrides(parser, &optionError);
+    if (!overrides) {
+        std::fprintf(stderr, "%s\n", qPrintable(optionError));
+        return 1;
+    }
 
     QStringList extensions;
     for (const QByteArray &format : QImageReader::supportedImageFormats()) {
@@ -52,6 +81,13 @@ int main(int argc, char *argv[])
     }
     Controller controller(extensions);
     Controller::setInstance(&controller);
+    Config *config = Config::self();
+    auto applySettings = [&controller, config, &overrides]() {
+        controller.setSettings(applyOverrides(storedSettings(*config), *overrides));
+    };
+    applySettings();
+    controller.setOverriddenSettings(overrides->options());
+    QObject::connect(config, &Config::configChanged, &controller, applySettings);
     if (!parser.positionalArguments().isEmpty()) {
         controller.openPath(parser.positionalArguments().constFirst());
     }

@@ -127,6 +127,46 @@ QList<QUrl> Controller::preloadUrls() const
     return m_preload;
 }
 
+const Settings &Controller::settings() const
+{
+    return m_settings;
+}
+
+void Controller::setSettings(const Settings &settings)
+{
+    if (settings == m_settings) {
+        return;
+    }
+    m_settings = settings;
+    refresh();
+}
+
+int Controller::defaultTopN() const
+{
+    return m_settings.topN;
+}
+
+bool Controller::defaultSkipScreening() const
+{
+    return m_settings.skipScreening;
+}
+
+QStringList Controller::overriddenSettings() const
+{
+    return m_overriddenSettings;
+}
+
+void Controller::setOverriddenSettings(const QStringList &keys)
+{
+    m_overriddenSettings = keys;
+    Q_EMIT changed();
+}
+
+bool Controller::isValidFolderName(const QString &name) const
+{
+    return ::isValidFolderName(name);
+}
+
 int Controller::storedEventCount() const
 {
     return m_storedEventCount;
@@ -251,17 +291,22 @@ QVariantList Controller::rejectItems() const
 
 QString Controller::keepFolder() const
 {
-    return m_folders.keep;
+    return m_settings.folders.keep;
 }
 
 QString Controller::restFolder() const
 {
-    return m_folders.rest;
+    return m_settings.folders.rest;
 }
 
 QString Controller::rejectFolder() const
 {
-    return m_folders.reject;
+    return m_settings.folders.reject;
+}
+
+bool Controller::rejectToTrash() const
+{
+    return m_settings.rejectToTrash;
 }
 
 bool Controller::applying() const
@@ -371,6 +416,7 @@ void Controller::startSession(int topN, bool skipScreening)
     SessionConfig config;
     config.topN = std::max(1, topN);
     config.skipScreening = skipScreening;
+    config.minDuels = m_settings.minDuels;
     config.rngSeed = QRandomGenerator::global()->generate();
     m_session.emplace(config, scan.images, QList<Event>{}, now());
     m_report = {};
@@ -527,7 +573,7 @@ void Controller::apply()
     for (const ImageInfo &image : m_session->images()) {
         files.append(image.file);
     }
-    const ApplyPlan plan = buildApplyPlan(m_directory, files, m_roles, m_folders, defaultSidecarExtensions());
+    const ApplyPlan plan = buildApplyPlan(m_directory, files, m_roles, m_settings.folders, m_settings.sidecarExtensions, m_settings.rejectToTrash);
     m_applyDone = 0;
     m_applyTotal = plan.fileCount();
 
@@ -569,15 +615,27 @@ void Controller::finishApply(const ApplyReport &report)
         refresh();
         return;
     }
-    QString error;
-    const QString archived = SessionStore(m_directory).archive(&error);
-    if (archived.isEmpty()) {
-        fail(error);
+    const SessionStore store(m_directory);
+    if (m_settings.keepSessionAfterApply) {
+        QString error;
+        const QString archived = store.archive(&error);
+        if (archived.isEmpty()) {
+            fail(error);
+        }
+        m_archivedSession = QFileInfo(archived).fileName();
+    } else if (!QFile::remove(store.path())) {
+        fail(u"Cannot delete %1"_s.arg(store.path()));
     }
-    m_archivedSession = QFileInfo(archived).fileName();
     m_applyReport = report;
     m_session.reset();
     refresh();
+}
+
+SchedulerOptions Controller::schedulerOptions() const
+{
+    SchedulerOptions options;
+    options.confidenceThreshold = m_settings.confidenceThreshold;
+    return options;
 }
 
 QVariantList Controller::itemsFor(Seedpick::Role role) const
@@ -656,7 +714,7 @@ QUrl Controller::urlFor(qsizetype index) const
 
 QList<QUrl> Controller::pairUrls(const Session &session) const
 {
-    const Plan plan = planNext(session);
+    const Plan plan = planNext(session, schedulerOptions());
     if (!plan.next) {
         return {};
     }
@@ -694,7 +752,7 @@ void Controller::refresh()
                 }
             }
         } else {
-            m_plan = planNext(*m_session);
+            m_plan = planNext(*m_session, schedulerOptions());
         }
 
         if (current == State::Summary) {

@@ -3,12 +3,26 @@
 
 add_executable(seedpick
     main.cpp
+    settings.cpp
+    settings.h
     controller.cpp
     controller.h
     imagecache.cpp
     imagecache.h
     imageurl.h
     asanoptions.cpp
+)
+
+kconfig_target_kcfg_file(seedpick
+    FILE seedpick.kcfg
+    CLASS_NAME Config
+    SINGLETON
+    MUTATORS
+    NOTIFIERS
+    GENERATE_PROPERTIES
+    DEFAULT_VALUE_GETTERS
+    GENERATE_MOC
+    QML_REGISTRATION
 )
 
 ecm_add_qml_module(seedpick URI io.github.ccharon.seedpick GENERATE_PLUGIN_SOURCE)
@@ -20,6 +34,7 @@ ecm_target_qml_sources(seedpick SOURCES
     qml/Preloader.qml
     qml/ReconcileMessage.qml
     qml/ScreeningView.qml
+    qml/SettingsPage.qml
     qml/StartView.qml
     qml/SummaryColumn.qml
     qml/SummaryView.qml
@@ -32,6 +47,8 @@ target_link_libraries(seedpick PRIVATE
     Qt6::Qml
     Qt6::Quick
     Qt6::QuickControls2
+    KF6::ConfigCore
+    KF6::ConfigGui
     KF6::CoreAddons
     KF6::I18n
     KF6::I18nQml

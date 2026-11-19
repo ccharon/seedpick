@@ -6,6 +6,7 @@
 #include "applyplan.h"
 #include "pairscheduler.h"
 #include "session.h"
+#include "settings.h"
 
 #include <QList>
 #include <QObject>
@@ -35,6 +36,12 @@ class Controller : public QObject
     Q_PROPERTY(int topN READ topN NOTIFY changed)
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY changed)
     Q_PROPERTY(QList<QUrl> preloadUrls READ preloadUrls NOTIFY changed)
+
+    // Settings of the run.
+    Q_PROPERTY(int defaultTopN READ defaultTopN NOTIFY changed)
+    Q_PROPERTY(bool defaultSkipScreening READ defaultSkipScreening NOTIFY changed)
+    // Command line options that override the settings for this run.
+    Q_PROPERTY(QStringList overriddenSettings READ overriddenSettings NOTIFY changed)
 
     // Resume prompt and reconcile report.
     Q_PROPERTY(int storedEventCount READ storedEventCount NOTIFY changed)
@@ -66,9 +73,10 @@ class Controller : public QObject
     Q_PROPERTY(QVariantList keepItems READ keepItems NOTIFY changed)
     Q_PROPERTY(QVariantList restItems READ restItems NOTIFY changed)
     Q_PROPERTY(QVariantList rejectItems READ rejectItems NOTIFY changed)
-    Q_PROPERTY(QString keepFolder READ keepFolder CONSTANT)
-    Q_PROPERTY(QString restFolder READ restFolder CONSTANT)
-    Q_PROPERTY(QString rejectFolder READ rejectFolder CONSTANT)
+    Q_PROPERTY(QString keepFolder READ keepFolder NOTIFY changed)
+    Q_PROPERTY(QString restFolder READ restFolder NOTIFY changed)
+    Q_PROPERTY(QString rejectFolder READ rejectFolder NOTIFY changed)
+    Q_PROPERTY(bool rejectToTrash READ rejectToTrash NOTIFY changed)
     Q_PROPERTY(bool applying READ applying NOTIFY changed)
     Q_PROPERTY(int applyDone READ applyDone NOTIFY changed)
     Q_PROPERTY(int applyTotal READ applyTotal NOTIFY changed)
@@ -76,7 +84,7 @@ class Controller : public QObject
     // Report after applying.
     Q_PROPERTY(int movedCount READ movedCount NOTIFY changed)
     Q_PROPERTY(QStringList applyErrors READ applyErrors NOTIFY changed)
-    // File name the session file was renamed to.
+    // File name the session file was renamed to, empty if it was deleted.
     Q_PROPERTY(QString archivedSession READ archivedSession NOTIFY changed)
     Q_PROPERTY(QUrl directoryUrl READ directoryUrl NOTIFY changed)
 
@@ -115,6 +123,14 @@ public:
     bool canUndo() const;
     QList<QUrl> preloadUrls() const;
 
+    const Settings &settings() const;
+    void setSettings(const Settings &settings);
+    int defaultTopN() const;
+    bool defaultSkipScreening() const;
+    QStringList overriddenSettings() const;
+    void setOverriddenSettings(const QStringList &keys);
+    Q_INVOKABLE bool isValidFolderName(const QString &name) const;
+
     int storedEventCount() const;
     QStringList removedFiles() const;
     QStringList addedFiles() const;
@@ -144,6 +160,7 @@ public:
     QString keepFolder() const;
     QString restFolder() const;
     QString rejectFolder() const;
+    bool rejectToTrash() const;
     bool applying() const;
     int applyDone() const;
     int applyTotal() const;
@@ -189,6 +206,7 @@ private:
     QStringList screeningHistory() const;
     QUrl urlFor(qsizetype index) const;
     QList<QUrl> pairUrls(const Seedpick::Session &session) const;
+    Seedpick::SchedulerOptions schedulerOptions() const;
     QVariantList itemsFor(Seedpick::Role role) const;
     void finishApply(const Seedpick::ApplyReport &report);
 
@@ -204,7 +222,8 @@ private:
     qsizetype m_current = -1;
     QList<QUrl> m_preload;
 
-    Seedpick::ResultFolders m_folders;
+    Settings m_settings;
+    QStringList m_overriddenSettings;
     // Indices into Session::images() in display order: ranking first, then the rest.
     QList<qsizetype> m_summaryOrder;
     QList<Seedpick::Role> m_roles;

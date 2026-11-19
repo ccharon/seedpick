@@ -31,7 +31,7 @@ option(BUILD_APP "Build the Kirigami application (off builds only the core libra
 find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Core Test)
 if(BUILD_APP)
     find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS Gui Widgets Qml Quick QuickControls2)
-    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS CoreAddons I18n)
+    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Config CoreAddons I18n)
     find_package(KF6Kirigami ${KF_MIN_VERSION} REQUIRED)
 endif()
 

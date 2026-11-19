@@ -103,7 +103,7 @@ Item {
                 board: view
                 role: Controller.Reject
                 title: i18nc("@title result column", "Reject")
-                folder: Controller.rejectFolder
+                folder: Controller.rejectToTrash ? i18nc("@info result folder", "Trash") : Controller.rejectFolder
                 items: Controller.rejectItems
             }
         }
@@ -154,7 +154,7 @@ Item {
         title: i18nc("@title:dialog", "Apply the Result?")
         subtitle: [i18ncp("@info", "Keep: one image → %2", "Keep: %1 images → %2", Controller.keepItems.length, Controller.keepFolder),
                    i18ncp("@info", "Rest: one image → %2", "Rest: %1 images → %2", Controller.restItems.length, Controller.restFolder),
-                   i18ncp("@info", "Reject: one image → %2", "Reject: %1 images → %2", Controller.rejectItems.length, Controller.rejectFolder),
+                   i18ncp("@info", "Reject: one image → %2", "Reject: %1 images → %2", Controller.rejectItems.length, Controller.rejectToTrash ? i18nc("@info result folder", "Trash") : Controller.rejectFolder),
                    "",
                    i18n("Sidecar files move along. Existing files are never overwritten.")].join("\n")
         standardButtons: Kirigami.Dialog.Cancel

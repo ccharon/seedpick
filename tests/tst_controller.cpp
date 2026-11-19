@@ -278,6 +278,40 @@ private Q_SLOTS:
         QCOMPARE(controller.state(), Controller::State::Welcome);
     }
 
+    void settingsReachSessionAndApply()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createImages(dir.path(), 4);
+        Controller controller(extensions);
+        Settings settings;
+        settings.topN = 3;
+        settings.skipScreening = true;
+        settings.minDuels = 4;
+        settings.folders = {u"_auswahl"_s, u"_rest2"_s, u"_ausschuss"_s};
+        settings.keepSessionAfterApply = false;
+        controller.setSettings(settings);
+        QCOMPARE(controller.defaultTopN(), 3);
+        QVERIFY(controller.defaultSkipScreening());
+        QCOMPARE(controller.keepFolder(), u"_auswahl"_s);
+
+        controller.openPath(dir.path());
+        controller.startSession(controller.defaultTopN(), controller.defaultSkipScreening());
+        QFile file(Seedpick::SessionStore(dir.path()).path());
+        QVERIFY(file.open(QIODevice::ReadOnly));
+        QCOMPARE(QJsonDocument::fromJson(file.readAll()).object().value("config"_L1).toObject().value("minDuels"_L1).toInt(), 4);
+        file.close();
+
+        controller.finish();
+        controller.apply();
+        QTRY_COMPARE(controller.state(), Controller::State::Applied);
+        const QDir result(dir.path());
+        QCOMPARE(QDir(result.filePath(u"_auswahl"_s)).entryList(QDir::Files).size(), 3);
+        QCOMPARE(QDir(result.filePath(u"_rest2"_s)).entryList(QDir::Files).size(), 1);
+        QVERIFY(controller.archivedSession().isEmpty());
+        QCOMPARE(result.entryList(QDir::Files | QDir::Hidden), QStringList{u".seedpick-apply.log.json"_s});
+    }
+
     void invalidDirectoryIsReported()
     {
         QTemporaryDir dir;

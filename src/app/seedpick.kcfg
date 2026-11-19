@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+SPDX-License-Identifier: CC0-1.0
+-->
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0 http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+    <kcfgfile name="seedpickrc"/>
+    <group name="Session">
+        <entry name="TopN" type="Int">
+            <label>Number of images to keep</label>
+            <default>5</default>
+            <min>1</min>
+            <max>9999</max>
+        </entry>
+        <entry name="SkipScreening" type="Bool">
+            <label>Start new sessions without screening</label>
+            <default>false</default>
+        </entry>
+        <entry name="MinDuels" type="Int">
+            <label>Minimum number of duels per image</label>
+            <default>2</default>
+            <min>1</min>
+            <max>10</max>
+        </entry>
+        <entry name="ConfidenceThreshold" type="Double">
+            <label>Expected share of wrong picks below which the duels are done</label>
+            <default>0.05</default>
+            <min>0.001</min>
+            <max>0.5</max>
+        </entry>
+    </group>
+    <group name="Apply">
+        <entry name="KeepDirName" type="String">
+            <label>Folder for the kept images</label>
+            <default>_keep</default>
+        </entry>
+        <entry name="RestDirName" type="String">
+            <label>Folder for the remaining images</label>
+            <default>_rest</default>
+        </entry>
+        <entry name="RejectDirName" type="String">
+            <label>Folder for rejected images</label>
+            <default>_reject</default>
+        </entry>
+        <entry name="RejectToTrash" type="Bool">
+            <label>Move rejected images to the trash</label>
+            <default>false</default>
+        </entry>
+        <entry name="SidecarExtensions" type="StringList">
+            <label>Extensions of sidecar files that move with their image</label>
+            <default>txt,json,yaml,yml,xmp,caption</default>
+        </entry>
+        <entry name="KeepSessionAfterApply" type="Bool">
+            <label>Keep the session file after applying</label>
+            <default>true</default>
+        </entry>
+    </group>
+</kcfg>

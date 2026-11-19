@@ -15,13 +15,22 @@ Kirigami.ApplicationWindow {
     minimumWidth: Kirigami.Units.gridUnit * 30
     minimumHeight: Kirigami.Units.gridUnit * 20
 
+    // Page shortcuts stay off while a layer such as the settings covers the page.
+    readonly property bool pageKeysActive: pageStack.layers.depth <= 1
+
+    function openSettings() {
+        if (root.pageKeysActive) {
+            root.pageStack.layers.push(settingsComponent);
+        }
+    }
+
     function toggleFullScreen() {
         root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen;
     }
 
     Shortcut {
         sequences: ["Backspace", StandardKey.Undo]
-        enabled: Controller.canUndo
+        enabled: Controller.canUndo && root.pageKeysActive
         onActivated: Controller.undo()
     }
     Shortcut {
@@ -30,12 +39,19 @@ Kirigami.ApplicationWindow {
     }
     Shortcut {
         sequence: "F"
+        enabled: root.pageKeysActive
         onActivated: root.toggleFullScreen()
+    }
+    Shortcut {
+        sequence: StandardKey.Preferences
+        onActivated: root.openSettings()
     }
     Shortcut {
         sequence: "Esc"
         onActivated: {
-            if (root.visibility === Window.FullScreen) {
+            if (!root.pageKeysActive) {
+                root.pageStack.layers.pop();
+            } else if (root.visibility === Window.FullScreen) {
                 root.visibility = Window.Windowed;
             } else if (Controller.state !== Controller.Welcome) {
                 Controller.closeSession();
@@ -82,11 +98,18 @@ Kirigami.ApplicationWindow {
                 visible: Controller.state === Controller.Screening || Controller.state === Controller.Duels || Controller.state === Controller.Summary
                 enabled: !Controller.applying
                 onTriggered: Controller.closeSession()
+            },
+            Kirigami.Action {
+                icon.name: "configure"
+                text: i18nc("@action:button", "Settings")
+                displayHint: Kirigami.DisplayHint.IconOnly
+                onTriggered: root.openSettings()
             }
         ]
 
         Loader {
             anchors.fill: parent
+            enabled: root.pageKeysActive
             sourceComponent: {
                 switch (Controller.state) {
                 case Controller.Screening:
@@ -122,6 +145,10 @@ Kirigami.ApplicationWindow {
         Component {
             id: appliedComponent
             AppliedView {}
+        }
+        Component {
+            id: settingsComponent
+            SettingsPage {}
         }
     }
 }

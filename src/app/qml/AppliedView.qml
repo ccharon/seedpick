@@ -21,7 +21,7 @@ ColumnLayout {
         Layout.alignment: Qt.AlignHCenter
         icon.name: Controller.applyErrors.length > 0 ? "dialog-warning" : "dialog-ok"
         text: i18np("Moved one file", "Moved %1 files", Controller.movedCount)
-        explanation: Controller.applyErrors.length > 0 ? i18np("One file could not be moved and stays in place.", "%1 files could not be moved and stay in place.", Controller.applyErrors.length) : i18n("The session file was kept as %1.", Controller.archivedSession)
+        explanation: Controller.applyErrors.length > 0 ? i18np("One file could not be moved and stays in place.", "%1 files could not be moved and stay in place.", Controller.applyErrors.length) : (Controller.archivedSession.length > 0 ? i18n("The session file was kept as %1.", Controller.archivedSession) : i18n("The session file was deleted."))
     }
 
     QQC2.ScrollView {

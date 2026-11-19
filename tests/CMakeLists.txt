@@ -16,9 +16,17 @@ ecm_add_tests(
 add_subdirectory(sim)
 if(BUILD_APP)
     # The controller is compiled into the test directly, it only needs the QML registration header.
-    ecm_add_test(tst_controller.cpp ${CMAKE_SOURCE_DIR}/src/app/controller.cpp ${CMAKE_SOURCE_DIR}/src/app/controller.h
+    ecm_add_test(tst_controller.cpp
+        ${CMAKE_SOURCE_DIR}/src/app/controller.cpp ${CMAKE_SOURCE_DIR}/src/app/controller.h
+        ${CMAKE_SOURCE_DIR}/src/app/settings.cpp ${CMAKE_SOURCE_DIR}/src/app/settings.h
         TEST_NAME tst_controller
-        LINK_LIBRARIES seedpickcore Qt6::Qml Qt6::Test
+        LINK_LIBRARIES seedpickcore KF6::I18n Qt6::Qml Qt6::Test
     )
     target_include_directories(tst_controller PRIVATE ${CMAKE_SOURCE_DIR}/src/app)
+
+    ecm_add_test(tst_settings.cpp ${CMAKE_SOURCE_DIR}/src/app/settings.cpp ${CMAKE_SOURCE_DIR}/src/app/settings.h
+        TEST_NAME tst_settings
+        LINK_LIBRARIES seedpickcore KF6::I18n Qt6::Test
+    )
+    target_include_directories(tst_settings PRIVATE ${CMAKE_SOURCE_DIR}/src/app)
 endif()

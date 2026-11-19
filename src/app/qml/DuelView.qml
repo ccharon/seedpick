@@ -17,27 +17,32 @@ ColumnLayout {
 
     Shortcut {
         sequence: "Left"
+        enabled: view.enabled
         onActivated: Controller.chooseLeft()
     }
     Shortcut {
         sequence: "Right"
+        enabled: view.enabled
         onActivated: Controller.chooseRight()
     }
     Shortcut {
         sequence: "Up"
+        enabled: view.enabled
         onActivated: Controller.chooseTie()
     }
     Shortcut {
         sequence: "1"
+        enabled: view.enabled
         onActivated: Controller.rejectLeft()
     }
     Shortcut {
         sequence: "2"
+        enabled: view.enabled
         onActivated: Controller.rejectRight()
     }
     Shortcut {
         sequences: ["Return", "Enter"]
-        enabled: view.canFinish
+        enabled: view.enabled && view.canFinish
         onActivated: Controller.finish()
     }
 

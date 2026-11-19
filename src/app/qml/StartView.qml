@@ -16,7 +16,7 @@ Item {
     // Return confirms the visible default action.
     Shortcut {
         sequences: ["Return", "Enter"]
-        enabled: Controller.state === Controller.ResumePrompt || view.showSetup
+        enabled: view.enabled && (Controller.state === Controller.ResumePrompt || view.showSetup)
         onActivated: {
             if (view.showSetup) {
                 Controller.startSession(topNBox.value, skipBox.checked);
@@ -101,11 +101,13 @@ Item {
                 Kirigami.FormData.label: i18nc("@label:spinbox", "Images to keep:")
                 from: 1
                 to: 9999
-                value: 5
+                editable: true
+                value: Controller.defaultTopN
             }
             QQC2.CheckBox {
                 id: skipBox
                 text: i18nc("@option:check", "Skip screening")
+                checked: Controller.defaultSkipScreening
             }
             QQC2.Label {
                 visible: Controller.state === Controller.ResumePrompt

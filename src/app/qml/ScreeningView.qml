@@ -14,14 +14,17 @@ ColumnLayout {
 
     Shortcut {
         sequences: ["Right", "Space"]
+        enabled: view.enabled
         onActivated: Controller.screenOk()
     }
     Shortcut {
         sequences: ["Down", "Delete"]
+        enabled: view.enabled
         onActivated: Controller.screenReject()
     }
     Shortcut {
         sequence: "Left"
+        enabled: view.enabled
         onActivated: Controller.showPrevious()
     }
 

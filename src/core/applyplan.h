@@ -24,6 +24,8 @@ struct ResultFolders {
     QString reject = QStringLiteral("_reject");
 
     QString name(Role role) const;
+
+    bool operator==(const ResultFolders &) const = default;
 };
 
 // Role of every image, indexed like Session::images(). An override wins. Otherwise rejected
