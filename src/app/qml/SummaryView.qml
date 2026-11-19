@@ -128,9 +128,15 @@ Item {
                 value: Controller.applyDone
             }
             QQC2.Button {
+                visible: Controller.applying
+                icon.name: "dialog-cancel"
+                text: i18nc("@action:button", "Cancel")
+                onClicked: Controller.cancelApply()
+            }
+            QQC2.Button {
+                visible: !Controller.applying
                 icon.name: "dialog-ok-apply"
                 text: i18nc("@action:button", "Apply…")
-                enabled: !Controller.applying
                 onClicked: confirmDialog.open()
             }
         }

@@ -153,13 +153,15 @@ Option `rejectToTrash`: Ausschuss in den Papierkorb (freedesktop Trash) statt in
 - **Nie überschreiben:** Bei Kollision wird `-1`, `-2` … vor der Endung angehängt, bei Begleitdateien konsistent mit dem Hauptbild. Ist nur der Name einer Begleitdatei belegt, bekommt die ganze Gruppe die Endung. `LocalFileMover` prüft beim Verschieben selbst noch einmal (`renameat2` mit `RENAME_NOREPLACE`, beim Kopieren `O_EXCL`), falls eine Datei nach der Planung entstanden ist.
 - Ordner nur anlegen, wenn sie gebraucht werden.
 - Verschieben über Dateisystemgrenzen: rename, sonst copy + verify + remove. Die Kopie übernimmt mtime und Rechte. Scheitert das Löschen des Originals, wird die Kopie wieder entfernt.
-- Ein **Apply-Log** `.seedpick-apply.log.json` (Quelle → Ziel) ermöglicht `seedpick --undo-apply <dir>`. Das ist für einen späteren Meilenstein, aber das Log wird von Anfang an geschrieben. Jedes Anwenden hängt einen Eintrag an, frühere bleiben erhalten. Nach jeder Datei wird das Log atomar neu geschrieben:
-  ```json
-  { "schema": 1, "applies": [ { "startedAt": "…", "finishedAt": "…",
-      "moves":  [ { "source": "img.png", "target": "_rest/img.png", "at": "…" } ],
-      "errors": [ { "source": "…", "target": "…", "error": "…", "at": "…" } ] } ] }
+- Ein **Apply-Log** `.seedpick-apply.log.jsonl` hält jede Verschiebung fest (Quelle → Ziel), zum Nachvollziehen. Eine Zeile pro Ereignis, angehängt und sofort geschrieben, frühere Inhalte bleiben unverändert:
   ```
-  Ist ein vorhandenes Log unlesbar oder lässt es sich nicht schreiben, wird nichts verschoben und die Sitzung bleibt bestehen.
+  {"t":"start","at":"…"}
+  {"t":"move","source":"img.png","target":"_rest/img.png","at":"…"}
+  {"t":"error","source":"…","target":"…","error":"…","at":"…"}
+  {"t":"finish","at":"…"}            (bei Abbruch mit "cancelled":true)
+  ```
+  Lässt sich das Log nicht öffnen, wird nichts verschoben und die Sitzung bleibt bestehen. Ein `--undo-apply` gibt es nicht: Verschoben wird nur in Unterordner (oder in den Papierkorb), zurück geht es per Dateimanager.
+- Anwenden lässt sich abbrechen. Es stoppt nach dem aktuellen Bild samt Begleitdateien, das Log endet mit `"cancelled":true`, und die Sitzungsdatei bleibt. Beim Fortsetzen fehlen die verschobenen Bilder, die Rangfolge der übrigen wird neu berechnet.
 - Fehler bei einzelnen Dateien brechen nicht alles ab. Am Ende kommt ein Bericht. Scheitert ein Bild, bleiben seine Begleitdateien bei ihm.
 - Die Rolle eines Bildes: ein Override gilt immer, sonst Ausschuss bei Ablehnung, Auswahl für die ersten n der Rangfolge, sonst Rest.
 
@@ -305,7 +307,7 @@ GPL-2.0-or-later für den Code, CC0-1.0 für Metadaten, REUSE-konform (SPDX-Head
 | M5 | KConfigXT, Einstellungsseite, CLI-Optionen | alle Werte aus §6 wirksam |
 | M6 | Gentoo: 9999-Ebuild + Vorlage + Release-Skript | `ebuild … install` lokal erfolgreich |
 | M7 | CI + AppImage + Release-Workflow | Tag `v0.1.0` erzeugt lauffähiges AppImage |
-| M8 | Feinschliff: synchroner Zoom, Metadaten/Prompt-Anzeige (PNG-tEXt, ComfyUI/A1111), i18n de, Trash (in M5 erledigt), `--undo-apply` | nach Bedarf |
+| M8 | Feinschliff: synchroner Zoom, Metadaten/Prompt-Anzeige (PNG-tEXt, ComfyUI/A1111), i18n de, Trash (in M5 erledigt) | nach Bedarf |
 
 ## 11. Offene Fragen (vor/während M0 klären)
 

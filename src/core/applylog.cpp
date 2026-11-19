@@ -4,9 +4,8 @@
 #include "applylog.h"
 
 #include <QDir>
-#include <QFile>
 #include <QJsonDocument>
-#include <QSaveFile>
+#include <QJsonObject>
 
 using namespace Qt::Literals::StringLiterals;
 
@@ -30,73 +29,56 @@ bool setError(QString *error, const QString &message)
 
 QString ApplyLog::fileName()
 {
-    return u".seedpick-apply.log.json"_s;
+    return u".seedpick-apply.log.jsonl"_s;
 }
 
 ApplyLog::ApplyLog(const QString &directory)
-    : m_path(QDir(directory).filePath(fileName()))
+    : m_file(QDir(directory).filePath(fileName()))
 {
 }
 
 QString ApplyLog::path() const
 {
-    return m_path;
+    return m_file.fileName();
 }
 
 bool ApplyLog::begin(const QDateTime &now, QString *error)
 {
-    m_applies = {};
-    QFile file(m_path);
-    if (file.exists()) {
-        if (!file.open(QIODevice::ReadOnly)) {
-            return setError(error, u"cannot read %1: %2"_s.arg(m_path, file.errorString()));
-        }
-        QJsonParseError parseError;
-        const QJsonDocument document = QJsonDocument::fromJson(file.readAll(), &parseError);
-        const QJsonObject root = document.object();
-        if (parseError.error != QJsonParseError::NoError || !document.isObject() || root.value("schema"_L1).toInt() != schemaVersion
-            || !root.value("applies"_L1).isArray()) {
-            return setError(error, u"%1 is not a valid apply log, it stays untouched"_s.arg(m_path));
-        }
-        m_applies = root.value("applies"_L1).toArray();
+    if (!m_file.isOpen() && !m_file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
+        return setError(error, u"cannot open %1: %2"_s.arg(path(), m_file.errorString()));
     }
-    m_current = QJsonObject{{"startedAt"_L1, formatTime(now)}};
-    m_moves = {};
-    m_errors = {};
-    return write(error);
+    return append({{"t"_L1, "start"_L1}, {"at"_L1, formatTime(now)}}, error);
 }
 
 bool ApplyLog::recordMove(const FileMove &move, const QDateTime &at, QString *error)
 {
-    m_moves.append(QJsonObject{{"source"_L1, move.source}, {"target"_L1, move.target}, {"at"_L1, formatTime(at)}});
-    return write(error);
+    return append({{"t"_L1, "move"_L1}, {"source"_L1, move.source}, {"target"_L1, move.target}, {"at"_L1, formatTime(at)}}, error);
 }
 
 bool ApplyLog::recordError(const FileMove &move, const QString &message, const QDateTime &at, QString *error)
 {
-    m_errors.append(QJsonObject{{"source"_L1, move.source}, {"target"_L1, move.target}, {"error"_L1, message}, {"at"_L1, formatTime(at)}});
-    return write(error);
+    return append({{"t"_L1, "error"_L1}, {"source"_L1, move.source}, {"target"_L1, move.target}, {"error"_L1, message}, {"at"_L1, formatTime(at)}}, error);
 }
 
-bool ApplyLog::finish(const QDateTime &now, QString *error)
+bool ApplyLog::finish(const QDateTime &now, bool cancelled, QString *error)
 {
-    m_current.insert("finishedAt"_L1, formatTime(now));
-    return write(error);
+    QJsonObject line{{"t"_L1, "finish"_L1}, {"at"_L1, formatTime(now)}};
+    if (cancelled) {
+        line.insert("cancelled"_L1, true);
+    }
+    const bool written = append(line, error);
+    m_file.close();
+    return written;
 }
 
-bool ApplyLog::write(QString *error)
+bool ApplyLog::append(const QJsonObject &line, QString *error)
 {
-    QJsonObject current = m_current;
-    current.insert("moves"_L1, m_moves);
-    current.insert("errors"_L1, m_errors);
-    QJsonArray applies = m_applies;
-    applies.append(current);
-    const QJsonObject root{{"schema"_L1, schemaVersion}, {"applies"_L1, applies}};
-
-    QSaveFile file(m_path);
-    const QByteArray data = QJsonDocument(root).toJson();
-    if (!file.open(QIODevice::WriteOnly) || file.write(data) != data.size() || !file.commit()) {
-        return setError(error, u"cannot write %1: %2"_s.arg(m_path, file.errorString()));
+    if (!m_file.isOpen()) {
+        return setError(error, u"%1 is not open"_s.arg(path()));
+    }
+    const QByteArray data = QJsonDocument(line).toJson(QJsonDocument::Compact) + '\n';
+    if (m_file.write(data) != data.size() || !m_file.flush()) {
+        return setError(error, u"cannot write %1: %2"_s.arg(path(), m_file.errorString()));
     }
     return true;
 }

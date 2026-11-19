@@ -79,6 +79,8 @@ struct ApplyReport {
     QList<ApplyError> errors;
     // Set when the apply log cannot be written. Nothing is moved after that.
     QString logError;
+    // The apply stopped on request before all files were handled.
+    bool cancelled = false;
 
     bool succeeded() const
     {
@@ -89,10 +91,12 @@ struct ApplyReport {
 // Moves the files of the plan and records each move in the log before the next one starts.
 // Moves into the trash are logged with the absolute path in the trash as target.
 // A failed file does not stop the others. When an image fails, its sidecars stay with it.
-// `progress` receives the number of handled files and the total.
+// `progress` receives the number of handled files and the total. `isCancelled` is asked before
+// each image, so an image and its sidecars are always handled together.
 ApplyReport executeApplyPlan(const QString &directory,
                              const ApplyPlan &plan,
                              FileMover &mover,
                              ApplyLog &log,
-                             const std::function<void(qsizetype, qsizetype)> &progress = {});
+                             const std::function<void(qsizetype, qsizetype)> &progress = {},
+                             const std::function<bool()> &isCancelled = {});
 }

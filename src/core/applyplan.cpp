@@ -148,8 +148,12 @@ ApplyPlan buildApplyPlan(const QString &directory,
     return plan;
 }
 
-ApplyReport
-executeApplyPlan(const QString &directory, const ApplyPlan &plan, FileMover &mover, ApplyLog &log, const std::function<void(qsizetype, qsizetype)> &progress)
+ApplyReport executeApplyPlan(const QString &directory,
+                             const ApplyPlan &plan,
+                             FileMover &mover,
+                             ApplyLog &log,
+                             const std::function<void(qsizetype, qsizetype)> &progress,
+                             const std::function<bool()> &isCancelled)
 {
     ApplyReport report;
     const QDir dir(directory);
@@ -166,6 +170,10 @@ executeApplyPlan(const QString &directory, const ApplyPlan &plan, FileMover &mov
         return report;
     }
     for (const ApplyItem &item : plan.items) {
+        if (isCancelled && isCancelled()) {
+            report.cancelled = true;
+            break;
+        }
         for (qsizetype m = 0; m < item.moves.size(); ++m) {
             FileMove move = item.moves.at(m);
             QString error;
@@ -192,7 +200,7 @@ executeApplyPlan(const QString &directory, const ApplyPlan &plan, FileMover &mov
             advance(1);
         }
     }
-    log.finish(QDateTime::currentDateTimeUtc(), &report.logError);
+    log.finish(QDateTime::currentDateTimeUtc(), report.cancelled, &report.logError);
     return report;
 }
 }

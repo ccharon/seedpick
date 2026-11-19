@@ -44,9 +44,20 @@ void createFiles(const QTemporaryDir &dir, const QStringList &files)
     }
 }
 
-QJsonObject readJson(const QString &path)
+// The log lines, optionally only those of one type.
+QList<QJsonObject> logLines(const QString &path, const QString &type = {})
 {
-    return QJsonDocument::fromJson(readFile(path)).object();
+    QList<QJsonObject> lines;
+    for (const QByteArray &line : readFile(path).split('\n')) {
+        if (line.isEmpty()) {
+            continue;
+        }
+        const QJsonObject object = QJsonDocument::fromJson(line).object();
+        if (type.isEmpty() || object.value("t"_L1).toString() == type) {
+            lines.append(object);
+        }
+    }
+    return lines;
 }
 
 QList<FileMove> allMoves(const ApplyPlan &plan)
@@ -259,19 +270,18 @@ private Q_SLOTS:
         // No reject folder without rejected images.
         QVERIFY(!QFileInfo::exists(dir.filePath(u"_reject"_s)));
 
-        const QJsonObject root = readJson(log.path());
-        QCOMPARE(root.value("schema"_L1).toInt(), 1);
-        const QJsonArray applies = root.value("applies"_L1).toArray();
-        QCOMPARE(applies.size(), 1);
-        const QJsonObject apply = applies.first().toObject();
-        QVERIFY(apply.contains("startedAt"_L1));
-        QVERIFY(apply.contains("finishedAt"_L1));
-        const QJsonArray moves = apply.value("moves"_L1).toArray();
-        QCOMPARE(moves.size(), 3);
-        QCOMPARE(moves.at(0).toObject().value("source"_L1).toString(), u"a.png"_s);
-        QCOMPARE(moves.at(0).toObject().value("target"_L1).toString(), u"_keep/a-1.png"_s);
-        QVERIFY(moves.at(0).toObject().contains("at"_L1));
-        QCOMPARE(apply.value("errors"_L1).toArray().size(), 0);
+        const QList<QJsonObject> lines = logLines(log.path());
+        QCOMPARE(lines.size(), 5);
+        QCOMPARE(lines.first().value("t"_L1).toString(), u"start"_s);
+        QVERIFY(lines.first().contains("at"_L1));
+        QCOMPARE(lines.last().value("t"_L1).toString(), u"finish"_s);
+        QVERIFY(!lines.last().contains("cancelled"_L1));
+        const QJsonObject first = lines.at(1);
+        QCOMPARE(first.value("t"_L1).toString(), u"move"_s);
+        QCOMPARE(first.value("source"_L1).toString(), u"a.png"_s);
+        QCOMPARE(first.value("target"_L1).toString(), u"_keep/a-1.png"_s);
+        QVERIFY(first.contains("at"_L1));
+        QCOMPARE(logLines(log.path(), u"error"_s).size(), 0);
     }
 
     void failedImageKeepsSidecarsAndOthersContinue()
@@ -297,10 +307,9 @@ private Q_SLOTS:
         QVERIFY(QFileInfo::exists(dir.filePath(u"a.txt"_s)));
         QVERIFY(QFileInfo::exists(dir.filePath(u"_keep/b.png"_s)));
 
-        const QJsonObject apply = readJson(log.path()).value("applies"_L1).toArray().first().toObject();
-        const QJsonArray errors = apply.value("errors"_L1).toArray();
+        const QList<QJsonObject> errors = logLines(log.path(), u"error"_s);
         QCOMPARE(errors.size(), 1);
-        QCOMPARE(errors.first().toObject().value("error"_L1).toString(), u"simulated failure"_s);
+        QCOMPARE(errors.first().value("error"_L1).toString(), u"simulated failure"_s);
     }
 
     void fileAppearingAfterPlanningIsNotOverwritten()
@@ -331,18 +340,59 @@ private Q_SLOTS:
             const ApplyPlan plan = buildApplyPlan(dir.path(), {file}, {Role::Keep}, withKeepFolder, noSidecars);
             QVERIFY(executeApplyPlan(dir.path(), plan, mover, log).succeeded());
         }
-        const QJsonArray applies = readJson(log.path()).value("applies"_L1).toArray();
-        QCOMPARE(applies.size(), 2);
-        QCOMPARE(applies.at(0).toObject().value("moves"_L1).toArray().first().toObject().value("source"_L1).toString(), u"a.png"_s);
-        QCOMPARE(applies.at(1).toObject().value("moves"_L1).toArray().first().toObject().value("source"_L1).toString(), u"b.png"_s);
+        QCOMPARE(logLines(log.path(), u"start"_s).size(), 2);
+        QCOMPARE(logLines(log.path(), u"finish"_s).size(), 2);
+        const QList<QJsonObject> moves = logLines(log.path(), u"move"_s);
+        QCOMPARE(moves.size(), 2);
+        QCOMPARE(moves.at(0).value("source"_L1).toString(), u"a.png"_s);
+        QCOMPARE(moves.at(1).value("source"_L1).toString(), u"b.png"_s);
     }
 
-    void unreadableLogStopsBeforeMoving()
+    void earlierLogContentIsKept()
     {
         QTemporaryDir dir;
         QVERIFY(dir.isValid());
         createFiles(dir, {u"a.png"_s});
-        writeFile(dir.filePath(ApplyLog::fileName()), "{ broken");
+        writeFile(dir.filePath(ApplyLog::fileName()), "earlier content\n");
+        const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Rest}, withKeepFolder, noSidecars);
+
+        LocalFileMover mover;
+        ApplyLog log(dir.path());
+        QVERIFY(executeApplyPlan(dir.path(), plan, mover, log).succeeded());
+        QVERIFY(readFile(log.path()).startsWith("earlier content\n"));
+        QCOMPARE(logLines(log.path(), u"move"_s).size(), 1);
+    }
+
+    void cancelStopsBetweenImages()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createFiles(dir, {u"a.png"_s, u"a.txt"_s, u"b.png"_s, u"c.png"_s});
+        const ApplyPlan plan =
+            buildApplyPlan(dir.path(), {u"a.png"_s, u"b.png"_s, u"c.png"_s}, {Role::Rest, Role::Rest, Role::Rest}, withKeepFolder, defaultSidecarExtensions());
+
+        LocalFileMover mover;
+        ApplyLog log(dir.path());
+        int asked = 0;
+        const ApplyReport report = executeApplyPlan(dir.path(), plan, mover, log, {}, [&asked] {
+            return ++asked > 1;
+        });
+        QVERIFY(report.cancelled);
+        QCOMPARE(report.moved, 2);
+        QVERIFY(report.errors.isEmpty());
+        QVERIFY(QFileInfo::exists(dir.filePath(u"_rest/a.png"_s)));
+        QVERIFY(QFileInfo::exists(dir.filePath(u"_rest/a.txt"_s)));
+        QCOMPARE(QDir(dir.path()).entryList(QDir::Files), (QStringList{u"b.png"_s, u"c.png"_s}));
+        QVERIFY(logLines(log.path(), u"finish"_s).first().value("cancelled"_L1).toBool());
+    }
+
+    void unwritableLogStopsBeforeMoving()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createFiles(dir, {u"a.png"_s});
+        // A directory in place of the log cannot be opened for writing.
+        QVERIFY(QDir(dir.path()).mkdir(ApplyLog::fileName()));
         const ApplyPlan plan = buildApplyPlan(dir.path(), {u"a.png"_s}, {Role::Keep}, withKeepFolder, noSidecars);
 
         LocalFileMover mover;
@@ -351,7 +401,6 @@ private Q_SLOTS:
         QVERIFY(!report.logError.isEmpty());
         QCOMPARE(report.moved, 0);
         QVERIFY(QFileInfo::exists(dir.filePath(u"a.png"_s)));
-        QCOMPARE(readFile(dir.filePath(ApplyLog::fileName())), QByteArray("{ broken"));
     }
 
     void rejectToTrash()
@@ -381,8 +430,8 @@ private Q_SLOTS:
         QVERIFY(QFileInfo::exists(trash + u"/info/a.png.trashinfo"_s));
         QVERIFY(!QFileInfo::exists(dir.filePath(u"_reject"_s)));
 
-        const QJsonArray moves = readJson(log.path()).value("applies"_L1).toArray().first().toObject().value("moves"_L1).toArray();
-        QCOMPARE(QFileInfo(moves.at(0).toObject().value("target"_L1).toString()).canonicalFilePath(), QFileInfo(trash + u"/files/a.png"_s).canonicalFilePath());
+        const QList<QJsonObject> moves = logLines(log.path(), u"move"_s);
+        QCOMPARE(QFileInfo(moves.at(0).value("target"_L1).toString()).canonicalFilePath(), QFileInfo(trash + u"/files/a.png"_s).canonicalFilePath());
     }
 
     void archiveKeepsEarlierArchives()

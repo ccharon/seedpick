@@ -16,6 +16,7 @@
 #include <QVariantList>
 #include <QtQml/qqmlregistration.h>
 
+#include <atomic>
 #include <optional>
 
 class QQmlEngine;
@@ -83,6 +84,8 @@ class Controller : public QObject
 
     // Report after applying.
     Q_PROPERTY(int movedCount READ movedCount NOTIFY changed)
+    // Applying stopped on request. The session file stays.
+    Q_PROPERTY(bool applyCancelled READ applyCancelled NOTIFY changed)
     Q_PROPERTY(QStringList applyErrors READ applyErrors NOTIFY changed)
     // File name the session file was renamed to, empty if it was deleted.
     Q_PROPERTY(QString archivedSession READ archivedSession NOTIFY changed)
@@ -166,6 +169,7 @@ public:
     int applyTotal() const;
 
     int movedCount() const;
+    bool applyCancelled() const;
     QStringList applyErrors() const;
     QString archivedSession() const;
     QUrl directoryUrl() const;
@@ -192,6 +196,8 @@ public:
     Q_INVOKABLE void setRole(const QString &file, Role role);
     // Moves the files in a worker thread. The state turns to Applied when done.
     Q_INVOKABLE void apply();
+    // Stops applying after the current image and its sidecars.
+    Q_INVOKABLE void cancelApply();
 
     Q_INVOKABLE void undo();
 
@@ -228,6 +234,7 @@ private:
     QList<qsizetype> m_summaryOrder;
     QList<Seedpick::Role> m_roles;
     QPointer<QThread> m_applyThread;
+    std::atomic_bool m_cancelRequested = false;
     qsizetype m_applyDone = 0;
     qsizetype m_applyTotal = 0;
     std::optional<Seedpick::ApplyReport> m_applyReport;

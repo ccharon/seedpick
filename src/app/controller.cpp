@@ -53,6 +53,7 @@ Controller::Controller(const QStringList &extensions, QObject *parent)
 Controller::~Controller()
 {
     if (m_applyThread) {
+        m_cancelRequested = true;
         m_applyThread->wait();
     }
 }
@@ -329,6 +330,11 @@ int Controller::movedCount() const
     return m_applyReport ? int(m_applyReport->moved) : 0;
 }
 
+bool Controller::applyCancelled() const
+{
+    return m_applyReport && m_applyReport->cancelled;
+}
+
 QStringList Controller::applyErrors() const
 {
     QStringList lines;
@@ -576,20 +582,29 @@ void Controller::apply()
     const ApplyPlan plan = buildApplyPlan(m_directory, files, m_roles, m_settings.folders, m_settings.sidecarExtensions, m_settings.rejectToTrash);
     m_applyDone = 0;
     m_applyTotal = plan.fileCount();
+    m_cancelRequested = false;
 
     const QString directory = m_directory;
     m_applyThread = QThread::create([this, plan, directory]() {
         LocalFileMover mover;
         ApplyLog log(directory);
-        const ApplyReport report = executeApplyPlan(directory, plan, mover, log, [this](qsizetype done, qsizetype) {
-            QMetaObject::invokeMethod(
-                this,
-                [this, done]() {
-                    m_applyDone = done;
-                    Q_EMIT changed();
-                },
-                Qt::QueuedConnection);
-        });
+        const ApplyReport report = executeApplyPlan(
+            directory,
+            plan,
+            mover,
+            log,
+            [this](qsizetype done, qsizetype) {
+                QMetaObject::invokeMethod(
+                    this,
+                    [this, done]() {
+                        m_applyDone = done;
+                        Q_EMIT changed();
+                    },
+                    Qt::QueuedConnection);
+            },
+            [this]() {
+                return m_cancelRequested.load();
+            });
         QMetaObject::invokeMethod(
             this,
             [this, report]() {
@@ -600,6 +615,11 @@ void Controller::apply()
     connect(m_applyThread, &QThread::finished, m_applyThread, &QObject::deleteLater);
     m_applyThread->start();
     Q_EMIT changed();
+}
+
+void Controller::cancelApply()
+{
+    m_cancelRequested = true;
 }
 
 void Controller::finishApply(const ApplyReport &report)
@@ -616,7 +636,9 @@ void Controller::finishApply(const ApplyReport &report)
         return;
     }
     const SessionStore store(m_directory);
-    if (m_settings.keepSessionAfterApply) {
+    if (report.cancelled) {
+        // The session stays. Resuming it drops the moved images from the ranking.
+    } else if (m_settings.keepSessionAfterApply) {
         QString error;
         const QString archived = store.archive(&error);
         if (archived.isEmpty()) {

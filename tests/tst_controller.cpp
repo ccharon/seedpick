@@ -274,7 +274,7 @@ private Q_SLOTS:
         QVERIFY(!Seedpick::SessionStore(dir.path()).exists());
         QCOMPARE(controller.archivedSession(), u".seedpick-session.done.json"_s);
         QVERIFY(QFile::exists(result.filePath(controller.archivedSession())));
-        QVERIFY(QFile::exists(result.filePath(u".seedpick-apply.log.json"_s)));
+        QVERIFY(QFile::exists(result.filePath(u".seedpick-apply.log.jsonl"_s)));
 
         controller.closeSession();
         QCOMPARE(controller.state(), Controller::State::Welcome);
@@ -311,7 +311,7 @@ private Q_SLOTS:
         QCOMPARE(QDir(result.filePath(u"_auswahl"_s)).entryList(QDir::Files).size(), 3);
         QCOMPARE(QDir(result.filePath(u"_rest2"_s)).entryList(QDir::Files).size(), 1);
         QVERIFY(controller.archivedSession().isEmpty());
-        QCOMPARE(result.entryList(QDir::Files | QDir::Hidden), QStringList{u".seedpick-apply.log.json"_s});
+        QCOMPARE(result.entryList(QDir::Files | QDir::Hidden), QStringList{u".seedpick-apply.log.jsonl"_s});
     }
 
     void invalidDirectoryIsReported()
