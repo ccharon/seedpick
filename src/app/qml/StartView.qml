@@ -13,6 +13,19 @@ Item {
 
     property bool showSetup: Controller.state === Controller.Setup
 
+    // Return confirms the visible default action.
+    Shortcut {
+        sequences: ["Return", "Enter"]
+        enabled: Controller.state === Controller.ResumePrompt || view.showSetup
+        onActivated: {
+            if (view.showSetup) {
+                Controller.startSession(topNBox.value, skipBox.checked);
+            } else {
+                Controller.resumeSession();
+            }
+        }
+    }
+
     FolderDialog {
         id: folderDialog
         title: i18nc("@title:window", "Open Image Folder")
@@ -64,7 +77,6 @@ Item {
                     icon.name: "media-playback-start"
                     text: i18nc("@action:button", "Continue")
                     onClicked: Controller.resumeSession()
-                    Component.onCompleted: forceActiveFocus()
                 }
                 QQC2.Button {
                     icon.name: "document-new"
