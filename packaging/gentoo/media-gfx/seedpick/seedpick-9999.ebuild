@@ -1,0 +1,29 @@
+# Copyright 2026 Christian Charon
+# Distributed under the terms of the GNU General Public License v2
+
+EAPI=8
+
+ECM_TEST="true"
+KFMIN=6.8.0
+QTMIN=6.6.0
+inherit ecm git-r3
+
+DESCRIPTION="Pick the best images from a folder by pairwise comparison"
+HOMEPAGE="https://github.com/ccharon/seedpick"
+EGIT_REPO_URI="https://github.com/ccharon/seedpick.git"
+
+LICENSE="GPL-2+"
+SLOT="0"
+
+DEPEND="
+	>=dev-qt/qtbase-${QTMIN}:6[gui,widgets]
+	>=dev-qt/qtdeclarative-${QTMIN}:6
+	>=kde-frameworks/kconfig-${KFMIN}:6
+	>=kde-frameworks/kcoreaddons-${KFMIN}:6
+	>=kde-frameworks/ki18n-${KFMIN}:6
+	>=kde-frameworks/kirigami-${KFMIN}:6
+"
+RDEPEND="${DEPEND}
+	>=kde-frameworks/kimageformats-${KFMIN}:6
+	>=kde-frameworks/qqc2-desktop-style-${KFMIN}:6
+"

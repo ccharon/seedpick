@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="person">
+		<email>ccharon@mailbox.org</email>
+		<name>Christian Charon</name>
+	</maintainer>
+	<longdescription>
+		Seedpick is a KDE image viewer that picks the best images of a folder
+		by pairwise comparison and moves them into result folders.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">ccharon/seedpick</remote-id>
+		<bugs-to>https://github.com/ccharon/seedpick/issues</bugs-to>
+	</upstream>
+</pkgmetadata>
