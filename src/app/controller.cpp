@@ -3,15 +3,19 @@
 
 #include "controller.h"
 
+#include "applylog.h"
+#include "filemover.h"
 #include "imagescanner.h"
 #include "imageurl.h"
 #include "sessionstore.h"
+#include "sidecars.h"
 
 #include <QDir>
 #include <QFile>
 #include <QJSEngine>
 #include <QQmlEngine>
 #include <QRandomGenerator>
+#include <QThread>
 #include <QTimeZone>
 
 using namespace Seedpick;
@@ -25,12 +29,32 @@ QDateTime now()
 {
     return QDateTime::currentDateTimeUtc();
 }
+
+Seedpick::Role toCore(Controller::Role role)
+{
+    switch (role) {
+    case Controller::Role::Keep:
+        return Seedpick::Role::Keep;
+    case Controller::Role::Rest:
+        return Seedpick::Role::Rest;
+    case Controller::Role::Reject:
+        return Seedpick::Role::Reject;
+    }
+    Q_UNREACHABLE_RETURN(Seedpick::Role::Keep);
+}
 }
 
 Controller::Controller(const QStringList &extensions, QObject *parent)
     : QObject(parent)
     , m_extensions(extensions)
 {
+}
+
+Controller::~Controller()
+{
+    if (m_applyThread) {
+        m_applyThread->wait();
+    }
 }
 
 void Controller::setInstance(Controller *controller)
@@ -51,6 +75,9 @@ Controller::State Controller::state() const
 {
     if (m_directory.isEmpty()) {
         return State::Welcome;
+    }
+    if (m_applyReport) {
+        return State::Applied;
     }
     if (!m_session) {
         return SessionStore(m_directory).exists() ? State::ResumePrompt : State::Setup;
@@ -88,7 +115,7 @@ int Controller::topN() const
 
 bool Controller::canUndo() const
 {
-    if (!m_session) {
+    if (!m_session || applying()) {
         return false;
     }
     Session copy = *m_session;
@@ -207,16 +234,79 @@ QList<QUrl> Controller::topUrls() const
     return urls;
 }
 
-QStringList Controller::rankingFiles() const
+QVariantList Controller::keepItems() const
 {
-    QStringList files;
-    if (!m_session) {
-        return files;
+    return itemsFor(Seedpick::Role::Keep);
+}
+
+QVariantList Controller::restItems() const
+{
+    return itemsFor(Seedpick::Role::Rest);
+}
+
+QVariantList Controller::rejectItems() const
+{
+    return itemsFor(Seedpick::Role::Reject);
+}
+
+QString Controller::keepFolder() const
+{
+    return m_folders.keep;
+}
+
+QString Controller::restFolder() const
+{
+    return m_folders.rest;
+}
+
+QString Controller::rejectFolder() const
+{
+    return m_folders.reject;
+}
+
+bool Controller::applying() const
+{
+    return m_applyThread != nullptr;
+}
+
+int Controller::applyDone() const
+{
+    return int(m_applyDone);
+}
+
+int Controller::applyTotal() const
+{
+    return int(m_applyTotal);
+}
+
+int Controller::movedCount() const
+{
+    return m_applyReport ? int(m_applyReport->moved) : 0;
+}
+
+QStringList Controller::applyErrors() const
+{
+    QStringList lines;
+    if (!m_applyReport) {
+        return lines;
     }
-    for (const RankedImage &ranked : m_plan.ranking) {
-        files.append(m_session->images().at(ranked.image).file);
+    if (!m_applyReport->logError.isEmpty()) {
+        lines.append(m_applyReport->logError);
     }
-    return files;
+    for (const ApplyError &error : m_applyReport->errors) {
+        lines.append(u"%1: %2"_s.arg(error.file, error.message));
+    }
+    return lines;
+}
+
+QString Controller::archivedSession() const
+{
+    return m_archivedSession;
+}
+
+QUrl Controller::directoryUrl() const
+{
+    return m_directory.isEmpty() ? QUrl() : QUrl::fromLocalFile(m_directory);
 }
 
 void Controller::openDirectory(const QUrl &url)
@@ -226,6 +316,9 @@ void Controller::openDirectory(const QUrl &url)
 
 void Controller::openPath(const QString &path)
 {
+    if (applying()) {
+        return;
+    }
     const QFileInfo info(path);
     if (!info.isDir()) {
         fail(u"Not a directory: %1"_s.arg(path));
@@ -234,6 +327,8 @@ void Controller::openPath(const QString &path)
     }
     m_session.reset();
     m_report = {};
+    m_applyReport.reset();
+    m_archivedSession.clear();
     m_errorMessage.clear();
     m_directory = info.canonicalFilePath();
     m_storedEventCount = 0;
@@ -315,8 +410,13 @@ void Controller::resumeSession()
 
 void Controller::closeSession()
 {
+    if (applying()) {
+        return;
+    }
     m_session.reset();
     m_report = {};
+    m_applyReport.reset();
+    m_archivedSession.clear();
     m_errorMessage.clear();
     m_directory.clear();
     refresh();
@@ -398,7 +498,7 @@ void Controller::finish()
 
 void Controller::undo()
 {
-    if (!m_session || !m_session->undo()) {
+    if (applying() || !m_session || !m_session->undo()) {
         return;
     }
     QString error;
@@ -407,6 +507,96 @@ void Controller::undo()
     }
     m_historyOffset = 0;
     refresh();
+}
+
+void Controller::setRole(const QString &file, Role role)
+{
+    const qsizetype index = m_session ? m_session->indexOf(file) : -1;
+    if (index < 0 || index >= m_roles.size() || m_roles.at(index) == toCore(role)) {
+        return;
+    }
+    append(OverrideEvent{file, toCore(role)});
+}
+
+void Controller::apply()
+{
+    if (applying() || state() != State::Summary) {
+        return;
+    }
+    QStringList files;
+    for (const ImageInfo &image : m_session->images()) {
+        files.append(image.file);
+    }
+    const ApplyPlan plan = buildApplyPlan(m_directory, files, m_roles, m_folders, defaultSidecarExtensions());
+    m_applyDone = 0;
+    m_applyTotal = plan.fileCount();
+
+    const QString directory = m_directory;
+    m_applyThread = QThread::create([this, plan, directory]() {
+        LocalFileMover mover;
+        ApplyLog log(directory);
+        const ApplyReport report = executeApplyPlan(directory, plan, mover, log, [this](qsizetype done, qsizetype) {
+            QMetaObject::invokeMethod(
+                this,
+                [this, done]() {
+                    m_applyDone = done;
+                    Q_EMIT changed();
+                },
+                Qt::QueuedConnection);
+        });
+        QMetaObject::invokeMethod(
+            this,
+            [this, report]() {
+                finishApply(report);
+            },
+            Qt::QueuedConnection);
+    });
+    connect(m_applyThread, &QThread::finished, m_applyThread, &QObject::deleteLater);
+    m_applyThread->start();
+    Q_EMIT changed();
+}
+
+void Controller::finishApply(const ApplyReport &report)
+{
+    // The worker posts this as its last step, so waiting is short.
+    if (m_applyThread) {
+        m_applyThread->wait();
+    }
+    m_applyThread = nullptr;
+    if (report.moved == 0 && !report.logError.isEmpty()) {
+        // Nothing moved, the session stays so the user can try again.
+        fail(report.logError);
+        refresh();
+        return;
+    }
+    QString error;
+    const QString archived = SessionStore(m_directory).archive(&error);
+    if (archived.isEmpty()) {
+        fail(error);
+    }
+    m_archivedSession = QFileInfo(archived).fileName();
+    m_applyReport = report;
+    m_session.reset();
+    refresh();
+}
+
+QVariantList Controller::itemsFor(Seedpick::Role role) const
+{
+    QVariantList items;
+    if (!m_session) {
+        return items;
+    }
+    for (qsizetype index : m_summaryOrder) {
+        if (m_roles.at(index) != role) {
+            continue;
+        }
+        items.append(QVariantMap{
+            {u"file"_s, m_session->images().at(index).file},
+            {u"url"_s, urlFor(index)},
+            {u"overridden"_s, m_session->overrideTarget(index).has_value()},
+        });
+    }
+    return items;
 }
 
 void Controller::choose(DuelResult result)
@@ -418,7 +608,7 @@ void Controller::choose(DuelResult result)
 
 bool Controller::append(const EventData &data)
 {
-    if (!m_session) {
+    if (!m_session || applying()) {
         return false;
     }
     QString error;
@@ -478,6 +668,8 @@ void Controller::refresh()
     m_plan = {};
     m_current = -1;
     m_preload.clear();
+    m_roles.clear();
+    m_summaryOrder.clear();
 
     if (m_session) {
         const State current = state();
@@ -503,6 +695,20 @@ void Controller::refresh()
             }
         } else {
             m_plan = planNext(*m_session);
+        }
+
+        if (current == State::Summary) {
+            m_roles = assignRoles(*m_session, m_plan.ranking);
+            QList<bool> ranked(m_session->images().size(), false);
+            for (const RankedImage &image : m_plan.ranking) {
+                m_summaryOrder.append(image.image);
+                ranked[image.image] = true;
+            }
+            for (qsizetype i = 0; i < m_session->images().size(); ++i) {
+                if (!ranked.at(i)) {
+                    m_summaryOrder.append(i);
+                }
+            }
         }
 
         // Pairs that follow each possible answer, so the next pair is decoded before the key press.

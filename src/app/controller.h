@@ -3,19 +3,23 @@
 
 #pragma once
 
+#include "applyplan.h"
 #include "pairscheduler.h"
 #include "session.h"
 
 #include <QList>
 #include <QObject>
+#include <QPointer>
 #include <QStringList>
 #include <QUrl>
+#include <QVariantList>
 #include <QtQml/qqmlregistration.h>
 
 #include <optional>
 
 class QQmlEngine;
 class QJSEngine;
+class QThread;
 
 // Binds the core session to QML. All state is derived from the session after every change.
 class Controller : public QObject
@@ -58,8 +62,23 @@ class Controller : public QObject
     Q_PROPERTY(int activeCount READ activeCount NOTIFY changed)
     Q_PROPERTY(QList<QUrl> topUrls READ topUrls NOTIFY changed)
 
-    // Summary placeholder until the summary page exists.
-    Q_PROPERTY(QStringList rankingFiles READ rankingFiles NOTIFY changed)
+    // Summary. Each item is a map with file, url and overridden.
+    Q_PROPERTY(QVariantList keepItems READ keepItems NOTIFY changed)
+    Q_PROPERTY(QVariantList restItems READ restItems NOTIFY changed)
+    Q_PROPERTY(QVariantList rejectItems READ rejectItems NOTIFY changed)
+    Q_PROPERTY(QString keepFolder READ keepFolder CONSTANT)
+    Q_PROPERTY(QString restFolder READ restFolder CONSTANT)
+    Q_PROPERTY(QString rejectFolder READ rejectFolder CONSTANT)
+    Q_PROPERTY(bool applying READ applying NOTIFY changed)
+    Q_PROPERTY(int applyDone READ applyDone NOTIFY changed)
+    Q_PROPERTY(int applyTotal READ applyTotal NOTIFY changed)
+
+    // Report after applying.
+    Q_PROPERTY(int movedCount READ movedCount NOTIFY changed)
+    Q_PROPERTY(QStringList applyErrors READ applyErrors NOTIFY changed)
+    // File name the session file was renamed to.
+    Q_PROPERTY(QString archivedSession READ archivedSession NOTIFY changed)
+    Q_PROPERTY(QUrl directoryUrl READ directoryUrl NOTIFY changed)
 
 public:
     enum class State {
@@ -69,10 +88,20 @@ public:
         Screening,
         Duels,
         Summary,
+        Applied,
     };
     Q_ENUM(State)
 
+    // Mirrors Seedpick::Role for QML.
+    enum class Role {
+        Keep,
+        Rest,
+        Reject,
+    };
+    Q_ENUM(Role)
+
     explicit Controller(const QStringList &extensions, QObject *parent = nullptr);
+    ~Controller() override;
 
     // The application creates the instance before loading QML.
     static void setInstance(Controller *controller);
@@ -109,7 +138,20 @@ public:
     int activeCount() const;
     QList<QUrl> topUrls() const;
 
-    QStringList rankingFiles() const;
+    QVariantList keepItems() const;
+    QVariantList restItems() const;
+    QVariantList rejectItems() const;
+    QString keepFolder() const;
+    QString restFolder() const;
+    QString rejectFolder() const;
+    bool applying() const;
+    int applyDone() const;
+    int applyTotal() const;
+
+    int movedCount() const;
+    QStringList applyErrors() const;
+    QString archivedSession() const;
+    QUrl directoryUrl() const;
 
     Q_INVOKABLE void openDirectory(const QUrl &url);
     Q_INVOKABLE void openPath(const QString &path);
@@ -130,6 +172,10 @@ public:
     Q_INVOKABLE void rejectRight();
     Q_INVOKABLE void finish();
 
+    Q_INVOKABLE void setRole(const QString &file, Role role);
+    // Moves the files in a worker thread. The state turns to Applied when done.
+    Q_INVOKABLE void apply();
+
     Q_INVOKABLE void undo();
 
 Q_SIGNALS:
@@ -143,6 +189,8 @@ private:
     QStringList screeningHistory() const;
     QUrl urlFor(qsizetype index) const;
     QList<QUrl> pairUrls(const Seedpick::Session &session) const;
+    QVariantList itemsFor(Seedpick::Role role) const;
+    void finishApply(const Seedpick::ApplyReport &report);
 
     QStringList m_extensions;
     QString m_directory;
@@ -155,4 +203,14 @@ private:
     int m_historyOffset = 0;
     qsizetype m_current = -1;
     QList<QUrl> m_preload;
+
+    Seedpick::ResultFolders m_folders;
+    // Indices into Session::images() in display order: ranking first, then the rest.
+    QList<qsizetype> m_summaryOrder;
+    QList<Seedpick::Role> m_roles;
+    QPointer<QThread> m_applyThread;
+    qsizetype m_applyDone = 0;
+    qsizetype m_applyTotal = 0;
+    std::optional<Seedpick::ApplyReport> m_applyReport;
+    QString m_archivedSession;
 };

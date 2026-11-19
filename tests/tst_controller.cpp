@@ -195,9 +195,87 @@ private Q_SLOTS:
         controller.startSession(2, true);
         controller.finish();
         QCOMPARE(controller.state(), Controller::State::Summary);
-        QCOMPARE(controller.rankingFiles().size(), 5);
+        QCOMPARE(controller.keepItems().size(), 2);
+        QCOMPARE(controller.restItems().size(), 3);
+        QCOMPARE(controller.rejectItems().size(), 0);
         controller.undo();
         QCOMPARE(controller.state(), Controller::State::Duels);
+    }
+
+    void setRoleOverridesAndUndoes()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createImages(dir.path(), 5);
+        Controller controller(extensions);
+        controller.openPath(dir.path());
+        controller.startSession(2, true);
+        controller.finish();
+
+        const QVariantMap first = controller.restItems().constFirst().toMap();
+        const QString file = first.value(u"file"_s).toString();
+        QVERIFY(!first.value(u"overridden"_s).toBool());
+        controller.setRole(file, Controller::Role::Reject);
+        QCOMPARE(controller.restItems().size(), 2);
+        QCOMPARE(controller.rejectItems().size(), 1);
+        const QVariantMap moved = controller.rejectItems().constFirst().toMap();
+        QCOMPARE(moved.value(u"file"_s).toString(), file);
+        QVERIFY(moved.value(u"overridden"_s).toBool());
+        QCOMPARE(storedEvents(dir.path()).last().toObject().value("t"_L1).toString(), u"override"_s);
+
+        // Setting the current role adds no event.
+        const int events = int(storedEvents(dir.path()).size());
+        controller.setRole(file, Controller::Role::Reject);
+        QCOMPARE(storedEvents(dir.path()).size(), events);
+
+        controller.undo();
+        QCOMPARE(controller.rejectItems().size(), 0);
+        QCOMPARE(controller.state(), Controller::State::Summary);
+    }
+
+    void applyMovesFilesAndArchivesSession()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createImages(dir.path(), 5);
+        Controller controller(extensions);
+        controller.openPath(dir.path());
+        controller.startSession(2, true);
+        controller.finish();
+
+        const QString rejected = controller.restItems().constFirst().toMap().value(u"file"_s).toString();
+        const QString caption = rejected.chopped(4) + u".txt"_s;
+        QFile captionFile(QDir(dir.path()).filePath(caption));
+        QVERIFY(captionFile.open(QIODevice::WriteOnly));
+        captionFile.close();
+        controller.setRole(rejected, Controller::Role::Reject);
+        const QStringList keep{controller.keepItems().at(0).toMap().value(u"file"_s).toString(),
+                               controller.keepItems().at(1).toMap().value(u"file"_s).toString()};
+
+        controller.apply();
+        QVERIFY(controller.applying());
+        QVERIFY(!controller.canUndo());
+        QTRY_COMPARE(controller.state(), Controller::State::Applied);
+        QVERIFY(!controller.applying());
+        QCOMPARE(controller.movedCount(), 6);
+        QCOMPARE(controller.applyErrors(), QStringList{});
+        QCOMPARE(controller.applyDone(), 6);
+
+        const QDir result(dir.path());
+        QVERIFY(QFile::exists(result.filePath(u"_reject/"_s + rejected)));
+        QVERIFY(QFile::exists(result.filePath(u"_reject/"_s + caption)));
+        for (const QString &file : keep) {
+            QVERIFY(QFile::exists(result.filePath(u"_keep/"_s + file)));
+        }
+        QCOMPARE(QDir(result.filePath(u"_rest"_s)).entryList(QDir::Files).size(), 2);
+        QCOMPARE(result.entryList(QDir::Files), QStringList{});
+        QVERIFY(!Seedpick::SessionStore(dir.path()).exists());
+        QCOMPARE(controller.archivedSession(), u".seedpick-session.done.json"_s);
+        QVERIFY(QFile::exists(result.filePath(controller.archivedSession())));
+        QVERIFY(QFile::exists(result.filePath(u".seedpick-apply.log.json"_s)));
+
+        controller.closeSession();
+        QCOMPARE(controller.state(), Controller::State::Welcome);
     }
 
     void invalidDirectoryIsReported()

@@ -14,12 +14,14 @@ add_executable(seedpick
 ecm_add_qml_module(seedpick URI io.github.ccharon.seedpick GENERATE_PLUGIN_SOURCE)
 ecm_target_qml_sources(seedpick SOURCES
     qml/Main.qml
+    qml/AppliedView.qml
     qml/DuelView.qml
     qml/ImagePane.qml
     qml/Preloader.qml
     qml/ReconcileMessage.qml
     qml/ScreeningView.qml
     qml/StartView.qml
+    qml/SummaryColumn.qml
     qml/SummaryView.qml
 )
 

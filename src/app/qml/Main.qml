@@ -56,6 +56,8 @@ Kirigami.ApplicationWindow {
                 return i18nc("@title", "Duels");
             case Controller.Summary:
                 return i18nc("@title", "Result");
+            case Controller.Applied:
+                return i18nc("@title", "Done");
             default:
                 return i18nc("@title", "Seedpick");
             }
@@ -78,6 +80,7 @@ Kirigami.ApplicationWindow {
                 icon.name: "media-playback-pause"
                 text: i18nc("@action:button", "Pause")
                 visible: Controller.state === Controller.Screening || Controller.state === Controller.Duels || Controller.state === Controller.Summary
+                enabled: !Controller.applying
                 onTriggered: Controller.closeSession()
             }
         ]
@@ -92,6 +95,8 @@ Kirigami.ApplicationWindow {
                     return duelComponent;
                 case Controller.Summary:
                     return summaryComponent;
+                case Controller.Applied:
+                    return appliedComponent;
                 default:
                     return startComponent;
                 }
@@ -113,6 +118,10 @@ Kirigami.ApplicationWindow {
         Component {
             id: summaryComponent
             SummaryView {}
+        }
+        Component {
+            id: appliedComponent
+            AppliedView {}
         }
     }
 }
