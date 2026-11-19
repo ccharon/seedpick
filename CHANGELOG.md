@@ -22,6 +22,7 @@ The project uses [Semantic Versioning](https://semver.org/).
 - Ctrl+Q quits.
 - Settings page and `seedpickrc` configuration for all options, command line options for a single run.
 - Rejected images can go to the trash instead of a folder.
+- Error messages start with a translated sentence, the technical detail follows in parentheses. An unreadable session file is no longer offered for resuming.
 - Gentoo: live ebuild, ebuild template, local overlay installer and release script.
 - Synchronous zoom and pan of both duel images.
 - Prompt and generation settings from PNG text chunks (A1111, ComfyUI), with differing settings highlighted in duels.

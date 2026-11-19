@@ -11,6 +11,8 @@
 #include "sessionstore.h"
 #include "sidecars.h"
 
+#include <KLocalizedString>
+
 #include <QDir>
 #include <QFile>
 #include <QJSEngine>
@@ -201,6 +203,11 @@ QVariantMap Controller::imageInfo(const QString &file) const
 int Controller::storedEventCount() const
 {
     return m_storedEventCount;
+}
+
+bool Controller::canResume() const
+{
+    return m_canResume;
 }
 
 QStringList Controller::removedFiles() const
@@ -402,7 +409,7 @@ void Controller::openPath(const QString &path)
     }
     const QFileInfo info(path);
     if (!info.isDir()) {
-        fail(u"Not a directory: %1"_s.arg(path));
+        fail(i18n("%1 is not a folder.", path));
         Q_EMIT changed();
         return;
     }
@@ -414,14 +421,16 @@ void Controller::openPath(const QString &path)
     m_imageInfo.clear();
     m_directory = info.canonicalFilePath();
     m_storedEventCount = 0;
+    m_canResume = false;
 
     const SessionStore store(m_directory);
     if (store.exists()) {
         const LoadResult loaded = store.load();
         if (loaded.session) {
             m_storedEventCount = int(loaded.session->events().size());
+            m_canResume = true;
         } else {
-            fail(loaded.error);
+            fail(i18n("The session file in this folder cannot be read."), loaded.error);
         }
     }
     refresh();
@@ -438,7 +447,7 @@ void Controller::startSession(int topN, bool skipScreening)
         // Keep the previous session instead of overwriting it.
         const QString backup = QDir(m_directory).filePath(u".seedpick-session.%1.json"_s.arg(now().toString(u"yyyyMMdd-HHmmss"_s)));
         if (!QFile::rename(store.path(), backup)) {
-            fail(u"Cannot move the previous session file to %1"_s.arg(backup));
+            fail(i18n("The previous session file cannot be renamed to %1.", QFileInfo(backup).fileName()));
             Q_EMIT changed();
             return;
         }
@@ -446,7 +455,7 @@ void Controller::startSession(int topN, bool skipScreening)
 
     const ScanResult scan = scanImages(m_directory, m_extensions);
     if (!scan.error.isEmpty()) {
-        fail(scan.error);
+        fail(i18n("The folder cannot be read."), scan.error);
         Q_EMIT changed();
         return;
     }
@@ -460,7 +469,7 @@ void Controller::startSession(int topN, bool skipScreening)
 
     QString error;
     if (!store.save(*m_session, now(), &error)) {
-        fail(error);
+        fail(i18n("Progress cannot be saved."), error);
     }
     refresh();
 }
@@ -470,13 +479,13 @@ void Controller::resumeSession()
     const SessionStore store(m_directory);
     LoadResult loaded = store.load();
     if (!loaded.session) {
-        fail(loaded.error);
+        fail(i18n("The session file in this folder cannot be read."), loaded.error);
         Q_EMIT changed();
         return;
     }
     const ScanResult scan = scanImages(m_directory, m_extensions);
     if (!scan.error.isEmpty()) {
-        fail(scan.error);
+        fail(i18n("The folder cannot be read."), scan.error);
         Q_EMIT changed();
         return;
     }
@@ -486,7 +495,7 @@ void Controller::resumeSession()
 
     QString error;
     if (!store.save(*m_session, now(), &error)) {
-        fail(error);
+        fail(i18n("Progress cannot be saved."), error);
     }
     refresh();
 }
@@ -587,7 +596,7 @@ void Controller::undo()
     }
     QString error;
     if (!SessionStore(m_directory).save(*m_session, now(), &error)) {
-        fail(error);
+        fail(i18n("Progress cannot be saved."), error);
     }
     m_historyOffset = 0;
     refresh();
@@ -672,7 +681,7 @@ void Controller::finishApply(const ApplyReport &report)
     m_applyThread = nullptr;
     if (report.moved == 0 && !report.logError.isEmpty()) {
         // Nothing moved, the session stays so the user can try again.
-        fail(report.logError);
+        fail(i18n("Nothing was moved because the apply log cannot be written."), report.logError);
         refresh();
         return;
     }
@@ -683,11 +692,11 @@ void Controller::finishApply(const ApplyReport &report)
         QString error;
         const QString archived = store.archive(&error);
         if (archived.isEmpty()) {
-            fail(error);
+            fail(i18n("The session file cannot be archived."), error);
         }
         m_archivedSession = QFileInfo(archived).fileName();
     } else if (!QFile::remove(store.path())) {
-        fail(u"Cannot delete %1"_s.arg(store.path()));
+        fail(i18n("The session file cannot be deleted."), store.path());
     }
     m_applyReport = report;
     m_session.reset();
@@ -734,12 +743,12 @@ bool Controller::append(const EventData &data)
     }
     QString error;
     if (!m_session->append(Event{data, now()}, &error)) {
-        fail(error);
+        fail(i18n("This step is not possible right now."), error);
         Q_EMIT changed();
         return false;
     }
     if (!SessionStore(m_directory).save(*m_session, now(), &error)) {
-        fail(error);
+        fail(i18n("Progress cannot be saved."), error);
     } else {
         m_errorMessage.clear();
     }
@@ -748,9 +757,9 @@ bool Controller::append(const EventData &data)
     return true;
 }
 
-void Controller::fail(const QString &message)
+void Controller::fail(const QString &message, const QString &detail)
 {
-    m_errorMessage = message;
+    m_errorMessage = detail.isEmpty() ? message : i18nc("@info %1 is a sentence describing the error, %2 the technical detail", "%1 (%2)", message, detail);
 }
 
 QStringList Controller::screeningHistory() const

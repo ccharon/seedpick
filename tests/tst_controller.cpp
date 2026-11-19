@@ -365,6 +365,33 @@ private Q_SLOTS:
         QCOMPARE(controller.state(), Controller::State::Welcome);
         QVERIFY(!controller.errorMessage().isEmpty());
     }
+
+    void brokenSessionFileShowsSentenceAndDetail()
+    {
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        createImages(dir.path(), 3);
+        QFile file(Seedpick::SessionStore(dir.path()).path());
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("{ broken");
+        file.close();
+
+        Controller controller(extensions);
+        controller.openPath(dir.path());
+        QVERIFY2(controller.errorMessage().startsWith(u"The session file in this folder cannot be read. ("_s), qPrintable(controller.errorMessage()));
+        QVERIFY(controller.errorMessage().contains(u"invalid JSON"_s));
+        QCOMPARE(controller.state(), Controller::State::ResumePrompt);
+        QVERIFY(!controller.canResume());
+
+        // A new session keeps the broken file as a backup, its own file can be resumed.
+        controller.startSession(1, true);
+        QCOMPARE(controller.state(), Controller::State::Duels);
+        QCOMPARE(QDir(dir.path()).entryList({u".seedpick-session.*.json"_s}, QDir::Hidden | QDir::Files).size(), 1);
+        controller.closeSession();
+        controller.openPath(dir.path());
+        QVERIFY(controller.canResume());
+        QVERIFY(controller.errorMessage().isEmpty());
+    }
 };
 
 QTEST_GUILESS_MAIN(TestController)

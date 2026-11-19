@@ -315,7 +315,7 @@ GPL-2.0-or-later für den Code, CC0-1.0 für Metadaten, REUSE-konform (SPDX-Head
 M8 wurde vor M7 umgesetzt. Umsetzung:
 - Zoom: Mausrad zum Zeiger hin, Ziehen verschiebt, Doppelklick wechselt zwischen eingepasst und ×2, Tasten `+ − 0`. Beide Duellbilder teilen Zoom und Ausschnitt relativ zur Bildgröße. Gezoomt lädt das Bild in voller Auflösung nach. Ein neues Paar beginnt eingepasst.
 - Metadaten: Der Core liest tEXt, zTXt und iTXt selbst (ohne Qt GUI). A1111 `parameters` wird in Prompt, Negativ-Prompt und Einstellungen zerlegt. Im ComfyUI-Graphen (`prompt`) führen positive/negative Eingänge des Samplers über Links bis zum ersten Text; schreibt ein Knoten den Prompt erst zur Laufzeit um (z. B. ein LLM), erscheint dessen Eingabe. Seed, Steps, CFG, Sampler, Scheduler, Denoise, Modell und LoRAs kommen dazu. Taste `I` blendet die Angaben ein, im Duell sind abweichende Einstellungen hervorgehoben. JPEG/WebP (EXIF) werden noch nicht gelesen.
-- Übersetzung: `po/extract.sh` zieht die Texte und führt sie mit `po/de/seedpick.po` zusammen, `ki18n_install(po)` installiert sie. Fehlermeldungen aus dem Core bleiben englisch.
+- Übersetzung: `po/extract.sh` zieht die Texte und führt sie mit `po/de/seedpick.po` zusammen, `ki18n_install(po)` installiert sie. Fehlermeldungen bestehen aus einem übersetzten Satz der App und dem englischen technischen Detail aus dem Core in Klammern.
 
 ## 11. Offene Fragen (vor/während M0 klären)
 

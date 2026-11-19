@@ -48,6 +48,8 @@ class Controller : public QObject
 
     // Resume prompt and reconcile report.
     Q_PROPERTY(int storedEventCount READ storedEventCount NOTIFY changed)
+    // The session file in the folder could be read, so it can be resumed.
+    Q_PROPERTY(bool canResume READ canResume NOTIFY changed)
     Q_PROPERTY(QStringList removedFiles READ removedFiles NOTIFY changed)
     Q_PROPERTY(QStringList addedFiles READ addedFiles NOTIFY changed)
     Q_PROPERTY(QStringList changedFiles READ changedFiles NOTIFY changed)
@@ -140,6 +142,7 @@ public:
     Q_INVOKABLE QVariantMap imageInfo(const QString &file) const;
 
     int storedEventCount() const;
+    bool canResume() const;
     QStringList removedFiles() const;
     QStringList addedFiles() const;
     QStringList changedFiles() const;
@@ -213,7 +216,8 @@ private:
     void refresh();
     bool append(const Seedpick::EventData &data);
     void choose(Seedpick::DuelResult result);
-    void fail(const QString &message);
+    // Shows a translated sentence, followed by the untranslated technical detail from the core.
+    void fail(const QString &message, const QString &detail = {});
     QStringList screeningHistory() const;
     QUrl urlFor(qsizetype index) const;
     QList<QUrl> pairUrls(const Seedpick::Session &session) const;
@@ -228,6 +232,7 @@ private:
     Seedpick::Plan m_plan;
     Seedpick::ReconcileReport m_report;
     int m_storedEventCount = 0;
+    bool m_canResume = false;
     // 0 shows the next unscreened image, k > 0 the k-th last screened one.
     int m_historyOffset = 0;
     qsizetype m_current = -1;

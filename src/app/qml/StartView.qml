@@ -11,7 +11,8 @@ import io.github.ccharon.seedpick
 Item {
     id: view
 
-    property bool showSetup: Controller.state === Controller.Setup
+    // An unreadable session file cannot be resumed, so only a new session is offered. It keeps the file as a backup.
+    property bool showSetup: Controller.state === Controller.Setup || (Controller.state === Controller.ResumePrompt && !Controller.canResume)
 
     // Return confirms the visible default action.
     Shortcut {

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: seedpick\n"
 "Report-Msgid-Bugs-To: https://github.com/ccharon/seedpick/issues\n"
-"POT-Creation-Date: 2026-11-19 20:44+0100\n"
+"POT-Creation-Date: 2026-11-19 20:48+0100\n"
 "PO-Revision-Date: 2026-11-19 15:57+0100\n"
 "Last-Translator: Christian Charon <ccharon@mailbox.org>\n"
 "Language-Team: German\n"
@@ -15,6 +15,58 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/app/controller.cpp:407
+#, kde-format
+msgid "%1 is not a folder."
+msgstr "%1 ist kein Ordner."
+
+#: src/app/controller.cpp:426 src/app/controller.cpp:475
+#, kde-format
+msgid "The session file in this folder cannot be read."
+msgstr "Die Sitzungsdatei in diesem Ordner lässt sich nicht lesen."
+
+#: src/app/controller.cpp:443
+#, kde-format
+msgid "The previous session file cannot be renamed to %1."
+msgstr "Die bisherige Sitzungsdatei lässt sich nicht in %1 umbenennen."
+
+#: src/app/controller.cpp:451 src/app/controller.cpp:481
+#, kde-format
+msgid "The folder cannot be read."
+msgstr "Der Ordner lässt sich nicht lesen."
+
+#: src/app/controller.cpp:465 src/app/controller.cpp:491
+#: src/app/controller.cpp:592 src/app/controller.cpp:744
+#, kde-format
+msgid "Progress cannot be saved."
+msgstr "Der Fortschritt lässt sich nicht speichern."
+
+#: src/app/controller.cpp:677
+#, kde-format
+msgid "Nothing was moved because the apply log cannot be written."
+msgstr "Nichts wurde verschoben, weil sich das Protokoll nicht schreiben lässt."
+
+#: src/app/controller.cpp:688
+#, kde-format
+msgid "The session file cannot be archived."
+msgstr "Die Sitzungsdatei lässt sich nicht archivieren."
+
+#: src/app/controller.cpp:692
+#, kde-format
+msgid "The session file cannot be deleted."
+msgstr "Die Sitzungsdatei lässt sich nicht löschen."
+
+#: src/app/controller.cpp:739
+#, kde-format
+msgid "This step is not possible right now."
+msgstr "Dieser Schritt ist gerade nicht möglich."
+
+#: src/app/controller.cpp:755
+#, kde-format
+msgctxt "@info %1 is a sentence describing the error, %2 the technical detail"
+msgid "%1 (%2)"
+msgstr "%1 (%2)"
 
 #: src/app/main.cpp:53 src/app/qml/Main.qml:88
 #, kde-format
