@@ -23,6 +23,9 @@ The project uses [Semantic Versioning](https://semver.org/).
 - Settings page and `seedpickrc` configuration for all options, command line options for a single run.
 - Rejected images can go to the trash instead of a folder.
 - Gentoo: live ebuild, ebuild template, local overlay installer and release script.
+- Synchronous zoom and pan of both duel images.
+- Prompt and generation settings from PNG text chunks (A1111, ComfyUI), with differing settings highlighted in duels.
+- German translation.
 
 ### Fixed
 

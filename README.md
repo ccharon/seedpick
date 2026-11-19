@@ -67,6 +67,11 @@ Until the repository is on GitHub, build the live ebuild from the local clone:
 
 Releases: `packaging/release.sh X.Y.Z [--push]` sets the version, updates the changelog and the AppStream release list, writes the versioned ebuild, commits and tags.
 
+## Translations
+
+`po/extract.sh` extracts the UI strings and merges them into `po/<lang>/seedpick.po`. To try a translation from the build tree:
+`LANGUAGE=de XDG_DATA_DIRS=$PWD/build/dev:/usr/share ./build/dev/bin/seedpick`.
+
 ## Development
 
 Formatting uses the KDE clang-format style. `ninja -C build/dev clang-format` formats all sources.
