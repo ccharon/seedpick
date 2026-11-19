@@ -11,3 +11,5 @@ ecm_add_tests(
     tst_version.cpp
     LINK_LIBRARIES seedpickcore Qt6::Test
 )
+
+add_subdirectory(sim)
