@@ -16,6 +16,8 @@ add_library(seedpickcore STATIC
     session.h
     sessionstore.cpp
     sessionstore.h
+    sidecars.cpp
+    sidecars.h
     version.cpp
     version.h
 )

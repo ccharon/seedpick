@@ -8,6 +8,7 @@ ecm_add_tests(
     tst_pairscheduler.cpp
     tst_session.cpp
     tst_sessionstore.cpp
+    tst_sidecars.cpp
     tst_version.cpp
     LINK_LIBRARIES seedpickcore Qt6::Test
 )
