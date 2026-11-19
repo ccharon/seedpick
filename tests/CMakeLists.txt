@@ -5,6 +5,7 @@ ecm_add_tests(
     tst_btmodel.cpp
     tst_event.cpp
     tst_imagescanner.cpp
+    tst_pairscheduler.cpp
     tst_session.cpp
     tst_sessionstore.cpp
     tst_version.cpp
