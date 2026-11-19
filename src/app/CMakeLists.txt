@@ -1,10 +1,26 @@
 # SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-add_executable(seedpick main.cpp)
+add_executable(seedpick
+    main.cpp
+    controller.cpp
+    controller.h
+    imagecache.cpp
+    imagecache.h
+    imageurl.h
+)
 
 ecm_add_qml_module(seedpick URI io.github.ccharon.seedpick GENERATE_PLUGIN_SOURCE)
-ecm_target_qml_sources(seedpick SOURCES qml/Main.qml)
+ecm_target_qml_sources(seedpick SOURCES
+    qml/Main.qml
+    qml/DuelView.qml
+    qml/ImagePane.qml
+    qml/Preloader.qml
+    qml/ReconcileMessage.qml
+    qml/ScreeningView.qml
+    qml/StartView.qml
+    qml/SummaryView.qml
+)
 
 target_link_libraries(seedpick PRIVATE
     seedpickcore

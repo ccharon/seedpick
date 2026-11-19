@@ -8,9 +8,13 @@
 #include <QApplication>
 #include <QCommandLineParser>
 #include <QIcon>
+#include <QImageReader>
 #include <QQmlApplicationEngine>
 #include <QQuickStyle>
 
+#include "controller.h"
+#include "imagecache.h"
+#include "imageurl.h"
 #include "seedpick_version.h"
 
 int main(int argc, char *argv[])
@@ -42,7 +46,21 @@ int main(int argc, char *argv[])
     parser.process(app);
     about.processCommandLine(&parser);
 
+    QStringList extensions;
+    for (const QByteArray &format : QImageReader::supportedImageFormats()) {
+        extensions.append(QString::fromLatin1(format).toLower());
+    }
+    Controller controller(extensions);
+    Controller::setInstance(&controller);
+    if (!parser.positionalArguments().isEmpty()) {
+        controller.openPath(parser.positionalArguments().constFirst());
+    }
+
+    ImageCache imageCache(qint64(256) * 1024 * 1024);
+    ImageCache::setInstance(&imageCache);
+
     QQmlApplicationEngine engine;
+    engine.addImageProvider(ImageUrl::providerId, new CachedImageProvider(&imageCache));
     KLocalization::setupLocalizedContext(&engine);
     engine.loadFromModule("io.github.ccharon.seedpick", "Main");
 
