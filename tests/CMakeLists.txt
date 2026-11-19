@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 ecm_add_tests(
+    tst_btmodel.cpp
     tst_event.cpp
     tst_imagescanner.cpp
     tst_session.cpp
