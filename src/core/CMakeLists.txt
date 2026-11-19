@@ -4,6 +4,8 @@
 configure_file(seedpick_version.h.in ${CMAKE_CURRENT_BINARY_DIR}/seedpick_version.h @ONLY)
 
 add_library(seedpickcore STATIC
+    imagescanner.cpp
+    imagescanner.h
     version.cpp
     version.h
 )
