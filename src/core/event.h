@@ -23,7 +23,8 @@ enum class DuelResult {
     Tie,
 };
 
-enum class OverrideTarget {
+// Where a file ends up when the result is applied.
+enum class Role {
     Keep,
     Rest,
     Reject,
@@ -51,7 +52,7 @@ struct RejectEvent {
 // Manual correction in the summary phase.
 struct OverrideEvent {
     QString file;
-    OverrideTarget target = OverrideTarget::Keep;
+    Role target = Role::Keep;
     bool operator==(const OverrideEvent &) const = default;
 };
 

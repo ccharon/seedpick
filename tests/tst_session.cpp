@@ -133,8 +133,8 @@ private Q_SLOTS:
         appendOrFail(session, Event{FinishEvent{}, {}});
         QVERIFY(session.isFinished());
         QCOMPARE(session.phase(), Phase::Summary);
-        appendOrFail(session, Event{OverrideEvent{img(2), OverrideTarget::Keep}, {}});
-        QCOMPARE(session.overrideTarget(2), OverrideTarget::Keep);
+        appendOrFail(session, Event{OverrideEvent{img(2), Role::Keep}, {}});
+        QCOMPARE(session.overrideTarget(2), Role::Keep);
         QCOMPARE(session.overrideTarget(1), std::nullopt);
     }
 
@@ -148,7 +148,7 @@ private Q_SLOTS:
         QTest::newRow("duel with itself") << true << duel(0, 0);
         QTest::newRow("duel unknown file") << true << Event{DuelEvent{img(0), u"other.png"_s, DuelResult::Left}, {}};
         QTest::newRow("reject during screening") << false << Event{RejectEvent{img(0)}, {}};
-        QTest::newRow("override during duels") << true << Event{OverrideEvent{img(0), OverrideTarget::Keep}, {}};
+        QTest::newRow("override during duels") << true << Event{OverrideEvent{img(0), Role::Keep}, {}};
         QTest::newRow("finish during screening") << false << Event{FinishEvent{}, {}};
     }
 

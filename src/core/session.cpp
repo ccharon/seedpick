@@ -256,7 +256,7 @@ bool Session::isActive(qsizetype index) const
     return state.screening == ScreeningState::Ok || isUnscreenedActive(state);
 }
 
-std::optional<OverrideTarget> Session::overrideTarget(qsizetype index) const
+std::optional<Role> Session::overrideTarget(qsizetype index) const
 {
     return m_states.at(index).override;
 }

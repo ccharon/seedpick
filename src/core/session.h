@@ -87,7 +87,7 @@ public:
     bool isRejected(qsizetype index) const;
     // Takes part in duels.
     bool isActive(qsizetype index) const;
-    std::optional<OverrideTarget> overrideTarget(qsizetype index) const;
+    std::optional<Role> overrideTarget(qsizetype index) const;
     bool isFinished() const;
 
     qsizetype activeCount() const;
@@ -103,7 +103,7 @@ private:
     struct ImageState {
         ScreeningState screening = ScreeningState::Unscreened;
         bool rejectedLater = false;
-        std::optional<OverrideTarget> override;
+        std::optional<Role> override;
     };
 
     void rebuild();

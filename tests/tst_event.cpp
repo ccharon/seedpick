@@ -36,9 +36,9 @@ private Q_SLOTS:
         QTest::newRow("duel right") << Event{DuelEvent{u"a.png"_s, u"b.png"_s, DuelResult::Right}, timestamp};
         QTest::newRow("duel tie") << Event{DuelEvent{u"a.png"_s, u"b.png"_s, DuelResult::Tie}, timestamp};
         QTest::newRow("reject") << Event{RejectEvent{u"a.png"_s}, timestamp};
-        QTest::newRow("override keep") << Event{OverrideEvent{u"a.png"_s, OverrideTarget::Keep}, timestamp};
-        QTest::newRow("override rest") << Event{OverrideEvent{u"a.png"_s, OverrideTarget::Rest}, timestamp};
-        QTest::newRow("override reject") << Event{OverrideEvent{u"a.png"_s, OverrideTarget::Reject}, timestamp};
+        QTest::newRow("override keep") << Event{OverrideEvent{u"a.png"_s, Role::Keep}, timestamp};
+        QTest::newRow("override rest") << Event{OverrideEvent{u"a.png"_s, Role::Rest}, timestamp};
+        QTest::newRow("override reject") << Event{OverrideEvent{u"a.png"_s, Role::Reject}, timestamp};
         QTest::newRow("finish") << Event{FinishEvent{}, timestamp};
         QTest::newRow("without timestamp") << Event{RejectEvent{u"a.png"_s}, {}};
     }

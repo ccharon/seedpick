@@ -19,8 +19,7 @@ using namespace Qt::Literals::StringLiterals;
 
 constexpr EnumNames<ScreenVerdict, 2> screenVerdictNames{{{ScreenVerdict::Ok, "ok"_L1}, {ScreenVerdict::Reject, "reject"_L1}}};
 constexpr EnumNames<DuelResult, 3> duelResultNames{{{DuelResult::Left, "left"_L1}, {DuelResult::Right, "right"_L1}, {DuelResult::Tie, "tie"_L1}}};
-constexpr EnumNames<OverrideTarget, 3> overrideTargetNames{
-    {{OverrideTarget::Keep, "keep"_L1}, {OverrideTarget::Rest, "rest"_L1}, {OverrideTarget::Reject, "reject"_L1}}};
+constexpr EnumNames<Role, 3> roleNames{{{Role::Keep, "keep"_L1}, {Role::Rest, "rest"_L1}, {Role::Reject, "reject"_L1}}};
 
 template<typename Enum, std::size_t N>
 QString toName(const EnumNames<Enum, N> &names, Enum value)
@@ -122,7 +121,7 @@ QJsonObject eventToJson(const Event &event)
             } else if constexpr (std::is_same_v<T, OverrideEvent>) {
                 json.insert("t"_L1, "override"_L1);
                 json.insert("file"_L1, data.file);
-                json.insert("target"_L1, toName(overrideTargetNames, data.target));
+                json.insert("target"_L1, toName(roleNames, data.target));
             } else if constexpr (std::is_same_v<T, FinishEvent>) {
                 json.insert("t"_L1, "finish"_L1);
             }
@@ -158,7 +157,7 @@ std::optional<Event> eventFromJson(const QJsonObject &json, QString *error)
     } else if (type == "override"_L1) {
         OverrideEvent data;
         data.file = reader.string("file"_L1);
-        data.target = reader.enumValue("target"_L1, overrideTargetNames);
+        data.target = reader.enumValue("target"_L1, roleNames);
         event.data = data;
     } else if (type == "finish"_L1) {
         event.data = FinishEvent{};
