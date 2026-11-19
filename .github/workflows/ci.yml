@@ -58,15 +58,25 @@ jobs:
   format:
     name: clang-format
     runs-on: ubuntu-latest
+    container: fedora:45
     steps:
+      # clang-format is pinned to the version used locally, newer versions may format differently.
+      - name: Install tools
+        run: |
+          dnf -y install cmake extra-cmake-modules pipx
+          pipx install clang-format==22.1.8
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - uses: actions/checkout@v5
 
-      # Pinned to the version used locally, newer versions may format differently.
-      - name: Install clang-format
-        run: pipx install clang-format==22.1.8
+      # .clang-format is not in the repository, ECM writes it at configure time.
+      - name: Generate .clang-format
+        run: |
+          echo 'include(/usr/share/ECM/kde-modules/KDEClangFormat.cmake)' > "$RUNNER_TEMP/clang-format.cmake"
+          cmake -P "$RUNNER_TEMP/clang-format.cmake"
 
       - name: Check formatting
-        run: git ls-files 'src/*.cpp' 'src/*.h' 'tests/*.cpp' 'tests/*.h' | xargs clang-format --dry-run --Werror
+        run: find src tests -name '*.cpp' -o -name '*.h' | xargs clang-format --dry-run --Werror
 
   reuse:
     name: REUSE

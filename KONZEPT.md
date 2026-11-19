@@ -290,7 +290,7 @@ Version: einzige Quelle ist `project(seedpick VERSION x.y.z)`. Sie wird über `K
 
 ### CI (GitHub Actions; Codeberg/Forgejo analog)
 - `ci.yml`: Build + Tests + Simulation (kurz) bei jedem Push/PR, plus `reuse lint`, clang-format-Check.
-  Umgesetzt: Gebaut wird im Container `fedora:45`, weil Ubuntu noch kein KF6 hat. Der Build nutzt das Preset `dev` (ASan/UBSan, Simulation kurz) und prüft Metainfo und `.desktop`. clang-format ist auf 22.1.8 festgelegt (pip), weil neuere Versionen anders formatieren können.
+  Umgesetzt: Gebaut wird im Container `fedora:45`, weil Ubuntu noch kein KF6 hat. Der Build nutzt das Preset `dev` (ASan/UBSan, Simulation kurz) und prüft Metainfo und `.desktop`. clang-format ist auf 22.1.8 festgelegt (pip), weil neuere Versionen anders formatieren können. `.clang-format` steht nicht im Repo, ECM erzeugt die Datei auch in der CI.
 - `release.yml`: bei Tag `v*` AppImage bauen, Quell-Tarball + AppImage + SHA256SUMS als Release-Assets.
 
 ### Lizenz
