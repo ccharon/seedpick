@@ -8,6 +8,8 @@ add_library(seedpickcore STATIC
     btmodel.h
     event.cpp
     event.h
+    filemover.cpp
+    filemover.h
     imagescanner.cpp
     imagescanner.h
     pairscheduler.cpp
