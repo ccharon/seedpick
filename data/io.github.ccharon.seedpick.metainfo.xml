@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+SPDX-License-Identifier: CC0-1.0
+-->
+<component type="desktop-application">
+  <id>io.github.ccharon.seedpick</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <name>Seedpick</name>
+  <summary>Pick the best images from a folder by pairwise comparison</summary>
+  <summary xml:lang="de">Die besten Bilder eines Ordners per Paarvergleich auswählen</summary>
+  <description>
+    <p>
+      Seedpick shows two images side by side and asks which one is better.
+      A Bradley-Terry model picks the next pair so that only a few comparisons are needed
+      to find the top n images. The result is moved into separate folders.
+    </p>
+  </description>
+  <developer id="io.github.ccharon">
+    <name>Christian Charon</name>
+  </developer>
+  <launchable type="desktop-id">io.github.ccharon.seedpick.desktop</launchable>
+  <url type="homepage">https://github.com/ccharon/seedpick</url>
+  <url type="bugtracker">https://github.com/ccharon/seedpick/issues</url>
+  <url type="vcs-browser">https://github.com/ccharon/seedpick</url>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <binary>seedpick</binary>
+  </provides>
+  <releases>
+    <release version="0.1.0" date="2026-11-19" type="development"/>
+  </releases>
+</component>

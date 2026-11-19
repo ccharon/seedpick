@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+# SPDX-License-Identifier: CC0-1.0
+[Desktop Entry]
+Type=Application
+Name=Seedpick
+GenericName=Image Picker
+GenericName[de]=Bildauswahl
+Comment=Pick the best images from a folder by pairwise comparison
+Comment[de]=Die besten Bilder eines Ordners per Paarvergleich auswählen
+Exec=seedpick %f
+Icon=io.github.ccharon.seedpick
+Terminal=false
+Categories=Qt;KDE;Graphics;Viewer;
+MimeType=inode/directory;
+Keywords=image;picker;compare;ranking;seed;
+Keywords[de]=Bild;Auswahl;Vergleich;Rangfolge;Seed;

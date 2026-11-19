@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-FileCopyrightText: 2026 Christian Charon <ccharon@mailbox.org>
+SPDX-License-Identifier: CC0-1.0
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <rect x="4" y="12" width="26" height="36" rx="3" fill="#93cee9" stroke="#2980b9" stroke-width="2"/>
+  <rect x="34" y="12" width="26" height="36" rx="3" fill="#fdbc4b" stroke="#c9850c" stroke-width="2"/>
+  <path d="M40 30 l5 5 l9 -11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 56 h44" stroke="#31363b" stroke-width="3" stroke-linecap="round"/>
+</svg>
